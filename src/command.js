@@ -30,6 +30,7 @@ class Command{
     //used when things like {mention} shouldn't be replaced
     noSubstitution
 
+    metaData = {}
     aliases
     category
     whiteList = []
@@ -92,6 +93,10 @@ class Command{
             str += a + " "
         }
         return str + "\n"
+    }
+    setMeta(metaData){
+        this.metaData = metaData
+        return this
     }
     run(msg){
         if(

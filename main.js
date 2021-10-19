@@ -42,7 +42,7 @@ echo:
             content: this.content
         }
     }, 
-    'echo [-Df] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun")
+    'echo [-Df] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
 ,
 
 button: 
@@ -83,7 +83,7 @@ button:
         ).catch(res => false)
         return false
     }, 
-    "button [style=\"style\"] [onclick=\"reply\"] [timealive=\"seconds\"] message on button\nstyles:\n\tprimary\n\tsecondary\n\tsuccess\n\tdanger\n\tlink\nSpecial expansions: {clicker}, {clickerm} {timeclicked}", "D", true).setCategory("fun")
+    "button [style=\"style\"] [onclick=\"reply\"] [timealive=\"seconds\"] message on button\nstyles:\n\tprimary\n\tsecondary\n\tsuccess\n\tdanger\n\tlink\nSpecial expansions: {clicker}, {clickerm} {timeclicked}", "D", true).setCategory("fun").setMeta({version: "1.0.0"})
 ,
 help: 
     new Command(function(msg, opts){
@@ -118,7 +118,7 @@ help:
         return false
     },
     "help [category]\ncategories:\n\tfun\n\tutil\n\tmeta", ""
-    ).setCategory("meta")
+    ).setCategory("meta").setMeta({version: "1.0.0"})
 ,
 reactiontime: 
     new Command(function(msg, opts){
@@ -148,7 +148,7 @@ reactiontime:
             }
         ).catch(res => false)
         return false
-    }, "reactiontime [-ac]\n-a: anyone can press the button\n-c: the button is automatically pressed", "ac").setCategory("fun")
+    }, "reactiontime [-ac]\n-a: anyone can press the button\n-c: the button is automatically pressed", "ac").setCategory("fun").setMeta({version: "1.0.0"})
 ,
 timeguesser: 
     new Command(function(msg, opts){
@@ -169,7 +169,7 @@ timeguesser:
             }
         )
         return false
-    }).setCategory("fun")
+    }).setCategory("fun").setMeta({version: "1.0.0"})
 ,
 reverse:
     new Command(function(msg, opts){
@@ -180,7 +180,7 @@ reverse:
         return {
             content: newText
         }
-    }, "reverse text").setCategory('util')
+    }, "reverse text").setCategory('util').setMeta({version: "1.0.0"})
 ,
 progressbar:
     new Command(function(msg, opts){
@@ -203,7 +203,7 @@ progressbar:
         }
         bar += `]${max}\n`
         return {content: bar + '```'}
-    }, "progressbar min at max", "").setCategory("util")
+    }, "progressbar min at max", "").setCategory("util").setMeta({version: "1.0.0"})
 ,
 spam:
     new Command(async function(msg, opts){
@@ -225,23 +225,23 @@ spam:
             await new Promise(res => setTimeout(res, delay()))
         }
         return {content: Math.random() > .99 ? `${userMention(msg.author.id)}'s spam has completed, have a nice day :)` : "done"}
-    }, "spam [-d] x message [delay=\"delay\" **OR** delay=\"min-delay,max-delay\"]", "d").setCategory("fun")
+    }, "spam [-d] x message [delay=\"delay\" **OR** delay=\"min-delay,max-delay\"]", "d").setCategory("fun").setMeta({version: "1.0.0"})
 ,
 stop: 
     new Command(function(msg, opts){
         SPAM_STOP = true;
         return {content: 'stopped'};
-    }, "stops spam").setCategory("util")
+    }, "stops spam").setCategory("util").setMeta({version: "1.0.0"})
 ,
 ping: 
     new Command(function(msg, opts){
         return {content: `🏓 ${Date.now() - msg.createdAt}ms`} 
-    }, "get ping in ms").setCategory('util')
+    }, "get ping in ms").setCategory('util').setMeta({version: "1.0.0"})
 ,
 length:
     new Command(function(msg, opts){
         return {content: String(this.content.length)}
-    }).setCategory("util")
+    }).setCategory("util").setMeta({version: "1.0.0"})
 ,
 tr:
     new Command(function(msg, opts){
@@ -251,7 +251,7 @@ tr:
         return{
             content: send.replaceAll(from.trim(), to.trim())
         }
-    }, "tr letter1-letter2 text\ntranslates letter1 to letter2").setCategory("util")
+    }, "tr letter1-letter2 text\ntranslates letter1 to letter2").setCategory("util").setMeta({version: "1.0.0"})
 ,
 choose:
     new Command(function(msg, opts){
@@ -259,7 +259,7 @@ choose:
         return {
             content: choices[Math.floor(Math.random() * choices.length)]
         }
-    }, "choose op1|op2|op3").setCategory("util")
+    }, "choose op1|op2|op3").setCategory("util").setMeta({version: "1.0.0"})
 ,
 date:
     new Command(function(msg, opts){
@@ -275,12 +275,12 @@ date:
     %d: day
     %Y: year
     %MS: milliseconds
-    %z: timezone`).setCategory("util")
+    %z: timezone`).setCategory("util").setMeta({version: "1.0.0"})
 ,
 version:
     new Command(function(msg, opts){
         return {content: VERSION}
-    }).setCategory("meta")
+    }).setCategory("meta").setMeta({version: "1.0.0"})
 ,
 var:
     new Command(function(msg, opts){
@@ -299,7 +299,7 @@ var:
                 content: `${varName} set for ${userMention(msg.author.id)}\n${varName} = ${varText}`
             }
         } else return false
-    }, "var [-g] varname var text\n-g: the variable is in the global scope (anyone can use it)\n-s: silent", "gs").setCategory("meta")
+    }, "var [-g] varname var text\n-g: the variable is in the global scope (anyone can use it)\n-s: silent", "gs").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 unset:
     new Command(function(msg, opts){
@@ -314,7 +314,7 @@ unset:
         return {
             content: `unset ${this.content} in ${scope} scope`
         }
-    }, "unset [-g] varname\n-g: unset var in global scope", "g").setCategory("meta")
+    }, "unset [-g] varname\n-g: unset var in global scope", "g").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 vars:
     new Command(function(msg, opts){
@@ -326,7 +326,7 @@ vars:
         }
         if(fmt) return {content: fmt}
         else return {content: `no vars in ${scope} scope`}
-    }, "vars [scope]").setCategory("meta")
+    }, "vars [scope]").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 userid:
     new Command(function(msg, opts){
@@ -357,7 +357,7 @@ formats:
     %j: jointed at
     %d: display name
     %c: display hex color
-    `, "v").setCategory("util")
+    `, "v").setCategory("util").setMeta({version: "1.0.0"})
 ,
 userinfo:
     new Command(function(msg, opts){
@@ -399,7 +399,7 @@ userinfo:
             }
         ).catch(res => console.log(res))
         return false
-    }, "userinfo user\n-r: picks a random user").setCategory("util")
+    }, "userinfo user\n-r: picks a random user").setCategory("util").setMeta({version: "1.0.0"})
 ,    
 roll:
     new Command(function(msg, opts){
@@ -424,7 +424,7 @@ roll:
         return {
             content: results.join(sep)
         }
-    }, `roll [count="count"] [sep="sep"] min [max]`).setCategory("fun")
+    }, `roll [count="count"] [sep="sep"] min [max]`).setCategory("fun").setMeta({version: "1.0.0"})
 ,
 changes:
     new Command(function(msg, opts){
@@ -452,7 +452,7 @@ changes:
             }
         }
         return {content: `\`\`\`md\n${rvChanges}\`\`\``}
-    }, "changes [-af] [version]\n-a: get all changes\n-f: put changes in file", "a").setCategory("meta")
+    }, "changes [-af] [version]\n-a: get all changes\n-f: put changes in file", "a").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 time:
     new Command(function(msg, opts){
@@ -463,14 +463,14 @@ time:
         if(!resp) return {content: "command not found"}
         resp["content"] = `time: ${performance.now() - start}\n${resp.content}`
         return resp
-    }, "time cmd").setCategory("util")
+    }, "time cmd").setCategory("util").setMeta({version: "1.0.0"})
 ,
 END:
     new Command(function(msg, opts){
         msg.channel.send("Exiting").then(
             res => exit()
         )
-    }, "END").addToWhitelist(BOT_ADMINS).setCategory("admin")
+    }, "END").addToWhitelist(BOT_ADMINS).setCategory("admin").setMeta({version: "1.0.0"})
 ,
 addooc:
     new Command(function(msg, opts){
@@ -484,7 +484,7 @@ addooc:
         ooc.push(this.content)
         fs.writeFileSync('./storage/ooc.list', JSON.stringify(ooc))
         return {content: `"${this.content}" added`}
-    })
+    }).setMeta({version: "1.0.0"}).setCategory("fun")
 ,
 rmooc:
     new Command(function(msg, opts){
@@ -492,7 +492,7 @@ rmooc:
         ooc = ooc.filter(val => val != this.content)
         fs.writeFileSync('./storage/ooc.list', JSON.stringify(ooc))
         return {content: `removed: "${this.content}"`}
-    })
+    }).setMeta({version: "1.0.0"}).setCategory("fun")
 ,
 ooc:
     new Command(function(msg, opts){
@@ -504,7 +504,21 @@ ooc:
             oocs.push(ooc[Math.floor(Math.random() * ooc.length)])
         }
         return {content: oocs.join(sep)}
-    })
+    }, "ooc [count=\"count\"] [sep=\"sep\"]").setMeta({version: "1.0.0"}).setCategory("fun")
+,
+cmdmeta:
+    new Command(function(msg, opts){
+        let c = commands[this.content]
+        if(!c) return {content: `${this.content} not found`}
+        if(c instanceof Alias){
+            c = c.cmd
+        }
+        let meta = ""
+        for(let m in c.metaData){
+            meta += `${m}: ${c.metaData[m]}\n`
+        }
+        return {content: meta}
+    }).setCategory("meta").setMeta({version: "1.0.0", meta: 'yes'})
 }
 
 commands["echo"].registerAlias(["e"], commands)
@@ -513,6 +527,7 @@ commands["spam"].registerAlias(["ss"], commands)
 commands["reactiontime"].registerAlias(["rt"], commands)
 commands["userinfo"].registerAlias(["ui", "uinfo"], commands)
 commands["help"].registerAlias(["this-is-a-very-important-alias-because-its-for-the-help-command-and-people-often-use-the-longer-alias"], commands)
+commands["cmdmeta"].registerAlias(["meta"], commands)
 
 client.on("ready", () => {
     console.log("hello")
