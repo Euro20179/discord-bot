@@ -29,6 +29,7 @@
 * time
 * cmdmeta
 * code
+* snipe
 
 ## Syntax
 * use [var varname varvalue to define a variable

@@ -20,6 +20,8 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const VERSION = "a.1.0.0"
 
+let LAST_DELETED_MESSAGE
+
 let userVars = {global: {}}
 
 let SPAM_STOP = false
@@ -525,6 +527,12 @@ code:
     new Command(function(msg, opts){
         return {content: "https://github.com/Euro20179/discord-bot"}
     }).setCategory("meta").setMeta({version: "1.0.0", gay: "yes"})
+,
+snipe:
+    new Command(function(msg, opts){
+        if(opts["d"]){msg.delete().then(res => false).catch(res => false)}
+        return {content: `${Command.escape(LAST_DELETED_MESSAGE.content)}\n-${userMention(LAST_DELETED_MESSAGE.author.id)}`}
+    }, "snipe [-d]", "d").setCategory("fun").setMeta({"version": "1.0.0", evil: "yes"})
 }
 
 commands["code"].registerAlias(["src"], commands)
@@ -675,6 +683,12 @@ client.on("messageCreate", async (msg) => {
         else if(resp != false){
             msg.channel.send(`${cmd} does not exist`)
         }
+    }
+})
+
+client.on("messageDelete", async(msg) => {
+    if([429650019726000129, 535251826128453662].indexOf(msg.channel.id) < 0){
+        LAST_DELETED_MESSAGE = msg
     }
 })
 client.login(token)

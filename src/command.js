@@ -35,6 +35,11 @@ class Command{
     category
     whiteList = []
     blackList = []
+    static escape(text){
+        if(text[0] == "["){
+            return `\\${text}`
+        }
+    }
     static stripPrefix(text){
         return text.slice(1)
     }
