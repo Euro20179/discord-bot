@@ -30,11 +30,12 @@ echo:
         if(!opts['D']) msg.delete().then().catch(reason => console.log("no delete perms"))
         if(opts["f"]){
             let ext = this.getAttr("ext") || 'txt'
+            let fileName = this.getAttr("filename") || `${msg.author.id}-echo.${ext}`
             fs.writeFileSync(`./${msg.author.id}:echo.cmdresp`, this.content)
             return {
                 files: [{
                     attachment: `./${msg.author.id}:echo.cmdresp`,
-                    name: `${msg.author.id}-echo.${ext}`
+                    name: fileName
                 }]
             }
         }
@@ -42,7 +43,7 @@ echo:
             content: this.content
         }
     }, 
-    'echo [-Df] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
+    'echo [-Df] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
 ,
 
 button: 
@@ -523,7 +524,7 @@ cmdmeta:
 code:
     new Command(function(msg, opts){
         return {content: "https://github.com/Euro20179/discord-bot"}
-    }).setCategory("meta").setMeta({version: "1.0.0"})
+    }).setCategory("meta").setMeta({version: "1.0.0", gay: "yes"})
 }
 
 commands["code"].registerAlias(["src"], commands)
