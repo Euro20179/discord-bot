@@ -1,0 +1,9 @@
+PREFIX:           "\["
+VALIDNAME:        [[:print:]]+
+DOFIRST:          "$("VALIDNAME CMDARGUMENTS")"
+VAR:              "$"VALIDNAME
+FLAGS:            ("-"([[:print]]+)*)*
+SUBSTITUTION:     "{".*"}"
+KEYWORDARG:       VALIDNAME"="\"VALIDNAME\"
+CMDARGUMENTS:     ([[:print:]]|DOFIRST|KEYWORDARG|SUBSTITUTION|VAR|FLAGS)*
+CMD:              PREFIX"VALIDNAME" CMDARGUMENTS?
