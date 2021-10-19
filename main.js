@@ -519,8 +519,14 @@ cmdmeta:
         }
         return {content: meta}
     }).setCategory("meta").setMeta({version: "1.0.0", meta: 'yes'})
+,
+code:
+    new Command(function(msg, opts){
+        return {content: "https://github.com/Euro20179/discord-bot"}
+    }).setCategory("meta").setMeta({version: "1.0.0"})
 }
 
+commands["code"].registerAlias(["src"], commands)
 commands["echo"].registerAlias(["e"], commands)
 commands["reverse"].registerAlias(["rev"], commands)
 commands["spam"].registerAlias(["ss"], commands)

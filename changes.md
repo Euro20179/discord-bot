@@ -28,6 +28,7 @@
 * addooc
 * time
 * cmdmeta
+* code
 
 ## Syntax
 * use [var varname varvalue to define a variable
