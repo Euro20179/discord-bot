@@ -694,3 +694,7 @@ client.on("messageDelete", async(msg) => {
     }
 })
 client.login(token)
+
+module.exports = {
+    PREFIX: PREFIX
+}
