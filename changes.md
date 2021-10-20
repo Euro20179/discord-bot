@@ -1,3 +1,14 @@
+# 1.1.0
+
+## Features
+* [echo reply="msgid"
+* [embed
+
+## Changes
+* commands that could end in a new line won't
+
+---
+
 # 1.0.4
 
 ## Features

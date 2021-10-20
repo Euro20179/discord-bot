@@ -29,7 +29,7 @@ function parseOpts(text, optString): [Opts, string]{
     }
     return [ opts, optsString ]
 }
-class Command{
+export class Command{
     //This will change each time the command is called in discord, it will refer to the message the user sent
     msg: Message
     //this will change each time the command is called in discord, it will refer to the opts given
@@ -76,7 +76,7 @@ class Command{
     get content() {
         return this._content.trim()
     }
-    constructor(onCall, help, opts, noSubstitution){
+    constructor(onCall, help?, opts?, noSubstitution?){
         //should return an object that can be directly put into msg.channel.send
         this.onCall = onCall;
         this.help = help;
@@ -150,7 +150,7 @@ class Command{
     }
 }
 
-class Alias {
+export class Alias {
     isAlias: boolean;
     category: Category;
     cmd: Command
