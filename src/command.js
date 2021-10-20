@@ -1,5 +1,4 @@
 const { userMention, channelMention, expandContent } = require("./util.js")
-const {PREFIX} = require("../main.js")
 
 function parseOpts(text, optString){
     text = Command.stripPrefix(text)
@@ -38,11 +37,15 @@ class Command{
     category
     whiteList = []
     blackList = []
+    PREFIX
     static escape(text){
-        if(text[0] == PREFIX){
+        if(text[0] == this.PREFIX){
             return `\\${text}`
         }
 	return text
+    }
+    static setPrefix(PREFIX){
+	this.PREFIX = PREFIX
     }
     static stripPrefix(text){
         return text.slice(1)

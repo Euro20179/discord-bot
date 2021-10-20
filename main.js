@@ -3,6 +3,7 @@ const fs = require("fs")
 const { performance } = require("perf_hooks")
 const { exit } = require("process")
 const { Command, Alias } = require("./src/command.js")
+const https = require("https")
 const {createButton} = require("./src/interactives.js")
 const {expandContent, userMention, strftime, userFinder, formatp} = require("./src/util")
 const client = new Client(
@@ -28,6 +29,8 @@ let userVars = {global: {}}
 
 let SPAM_STOP = false
 
+Command.setPrefix(PREFIX)
+
 const commands = {
 echo: 
     new Command(function(msg, opts){
@@ -44,7 +47,7 @@ echo:
             }
         }
         return {
-            content: expandContent(this.content)
+            content: expandContent(this.content, msg)
         }
     }, 
     'echo [-Df] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
