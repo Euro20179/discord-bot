@@ -1,3 +1,18 @@
+# 1.0.2
+
+## Fixes
+* [changes
+* [addooc now accepts files
+
+---
+
+# 1.0.1
+
+## Fixes
+* [snipe doesn't say undefined when deleted message isn't a command
+
+---
+
 # 1.0.0
 
 ## Commands
@@ -39,11 +54,3 @@
     * put a \\ before $() to disable this
 
 ---
-
-# 1.0.1
-
-## Fixes
-* [snipe doesn't say undefined when deleted message isn't a command
-
----
-

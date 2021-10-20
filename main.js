@@ -486,10 +486,11 @@ addooc:
         catch(err){
             ooc = []
         }
-        ooc.push(this.content)
+	let addOoc = this.content.replace("{file}", this.attachments[0].url).replace("{f}", this.attachments[0].url)
+        ooc.push(addOoc)
         fs.writeFileSync('./storage/ooc.list', JSON.stringify(ooc))
-        return {content: `"${this.content}" added`}
-    }).setMeta({version: "1.0.0"}).setCategory("fun")
+        return {content: `"${addOoc}" added`}
+    }, "\\[addooc ooc\n{f} is replaced with the link to file if a file is given").setMeta({version: "1.0.0"}).setCategory("fun")
 ,
 rmooc:
     new Command(function(msg, opts){
