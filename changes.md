@@ -1,3 +1,13 @@
+# 1.0.4
+
+## Features
+* [userid -r
+
+## Fixes
+* [help
+
+---
+
 # 1.0.3
 
 ## Features
