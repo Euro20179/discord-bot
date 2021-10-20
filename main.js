@@ -20,7 +20,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "a.1.0.0"
+const VERSION = "1.0.3"
 
 let LAST_DELETED_MESSAGE
 
@@ -44,7 +44,7 @@ echo:
             }
         }
         return {
-            content: this.content
+            content: expandContent(this.content)
         }
     }, 
     'echo [-Df] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})

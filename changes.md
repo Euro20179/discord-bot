@@ -2,6 +2,10 @@
 
 ## Features
 * [oocfile
+* [echo now allows for {mention} etc...
+
+## Fixes
+* version
 
 ---
 
