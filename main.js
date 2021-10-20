@@ -18,6 +18,8 @@ const token = fs.readFileSync("token", "utf-8").trim()
 
 const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
+const PREFIX = "]"
+
 const VERSION = "a.1.0.0"
 
 let LAST_DELETED_MESSAGE
@@ -636,7 +638,7 @@ function replaceVars(msg){
 
 function handleInnerCmd(msg, tmpContent){
     for(let i of parseCommand(msg.content)){
-        let innerCmd = Command.getCommand(`[${i}`)
+        let innerCmd = Command.getCommand(`${PREFIX}${i}`)
         msg.content = i
         let resp = runCmd(innerCmd, msg)
         let content = resp?.content || ""
@@ -652,7 +654,7 @@ function runCmd(cmd, msg){
 }
 
 client.on("messageCreate", async (msg) => {
-    if(msg.content[0] == "["){
+    if(msg.content[0] == PREFIX){
         let cmd = Command.getCommand(msg.content)
         let resp = runCmd(cmd, msg)
         if(resp){

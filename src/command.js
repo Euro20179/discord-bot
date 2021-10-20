@@ -36,9 +36,10 @@ class Command{
     whiteList = []
     blackList = []
     static escape(text){
-        if(text[0] == "["){
+        if(text[0] == PREFIX){
             return `\\${text}`
         }
+	return text
     }
     static stripPrefix(text){
         return text.slice(1)

@@ -40,3 +40,10 @@
 
 ---
 
+# 1.0.1
+
+## Fixes
+* [snipe doesn't say undefined when deleted message isn't a command
+
+---
+
