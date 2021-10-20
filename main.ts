@@ -31,7 +31,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.1.0"
+const VERSION = "1.1.0.1"
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
@@ -543,7 +543,8 @@ addooc:
         catch(err){
             ooc = []
         }
-	let addOoc = this.content.replace("{file}", this.attachments[0].url).replace("{f}", this.attachments[0].url)
+        let addOoc = this.content
+        if(this.attachments[0]) addOoc = this.content.replace("{file}", this.attachments[0].url).replace("{f}", this.attachments[0].url)
         ooc.push(addOoc)
         fs.writeFileSync('./storage/ooc.list', JSON.stringify(ooc))
         return {content: `"${addOoc}" added`}
