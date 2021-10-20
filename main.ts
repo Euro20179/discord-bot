@@ -11,8 +11,6 @@ const { exit } = require("process")
 //@ts-ignore
 const { Command, Alias } = require("./src/command.js")
 //@ts-ignore
-const https = require("https")
-//@ts-ignore
 const {createButton} = require("./src/interactives.js")
 //@ts-ignore
 const {expandContent, userMention, strftime, userFinder, formatp} = require("./src/util")
