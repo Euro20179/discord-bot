@@ -1,9 +1,9 @@
-import { Client, Message, PartialMessage } from "discord.js"
+import { Client, Message, PartialMessage, MessageEmbed } from "discord.js"
 
 import {Collection} from "@discordjs/collection"
 
 //@ts-ignore
-const { Intents, MessageActionRow, MessageEmbed, MessageSelectMenu} = require("discord.js")
+const { Intents, MessageActionRow, MessageSelectMenu} = require("discord.js")
 //@ts-ignore
 const fs = require("fs")
 //@ts-ignore
@@ -11,7 +11,7 @@ const { performance } = require("perf_hooks")
 //@ts-ignore
 const { exit } = require("process")
 //@ts-ignore
-const { Command, Alias } = require("./src/command.js")
+import {Command, Alias} from "./src/command"
 //@ts-ignore
 const {createButton} = require("./src/interactives.js")
 import {userFinder} from "./src/util.js"
@@ -68,6 +68,34 @@ echo:
         }
     }, 
     'echo [-Df] [reply=\"messageid\"] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
+,
+
+embed:
+    new Command(function(msg: Message, opts){
+        const color = this.getAttr("color") || "black"
+        let embed = new MessageEmbed({
+            color: color,
+            description: this.getAttr("description") || undefined,
+        })
+        let thumbnail = this.getAttr("thumb") || undefined;
+        let image = this.getAttr("img") || undefined;
+        embed.setThumbnail(thumbnail)
+        embed.setImage(image)
+        embed.setFooter(this.getAttr("footer") || "")
+        embed.setAuthor(this.getAttr("author") || "")
+        embed.title = this.content.split("\n")[0]
+        for(let line of this.content.split("\n").slice(1)){
+            let [name, value, inline] = line.split("|")
+            if(!name) return {content: "field name cannot be empty"}
+            if(!value) return {content: "value cannot be empty"}
+            inline = inline?.trim()
+            if(["false", "true", undefined].indexOf(inline) == -1) return {content: "inline must be true or false"}
+            embed.addField(name, value, inline == "true" ? true : false)
+        }
+        return {
+            embeds: [embed]
+        }
+    }, "embed [author=\"author\"] [color=\"color\"] [description=\"description\"] [footer=\"footer\"] [img=\"img\"] [thumb=\"thumb\"] title\nfieldname | fieldvalue\n...")
 ,
 
 button: 
@@ -140,7 +168,6 @@ help:
                 })
             }
         ).catch(res => console.log(res))
-        console.log("hi")
         return false
     },
     "help [category]\ncategories:\n\tfun\n\tutil\n\tmeta", ""
@@ -337,7 +364,6 @@ unset:
             delete userVars[scope][this.content]
         }
         catch(err){
-            console.log(err)
             return {content: `${this.content} does not exist in ${scope} scope`}
         }
         return {
@@ -353,11 +379,11 @@ vars:
         for(let v in userVars[scope]){
             fmt += `${v}: ${userVars[scope][v]}\n`
         }
-        if(fmt) return {content: fmt}
+        if(fmt) return {content: fmt.trim()}
         else return {content: `no vars in ${scope} scope`}
     }, "vars [scope]").setCategory("meta").setMeta({version: "1.0.0"})
 ,
-userid:
+user:
     new Command(function(msg, opts){
         let members
         let text = ''
@@ -381,9 +407,10 @@ userid:
                 ["(?<!%)%j", member[1].joinedAt],
                 ["(?<!%)%d", member[1].displayName],
                 ["(?<!%)%c", member[1].displayHexColor],
+                ["(?<!%)%a", `https://cdn.discordapp.com/avatars/${member[0]}/${member[1].user.avatar}.png`]
             ])}\n`
         }
-        return text ? {content: text} : {content: "found no one"}
+        return text ? {content: text.trim()} : {content: "found no one"}
     }, `userid [-vr] [fmt=\"fmt\"] user\n-v: also say username
 formats:
     %i: user id
@@ -410,7 +437,7 @@ userinfo:
             embed.addField("name", m.user.username, true)
             embed.addField("nickname", m.nickname ?? `**false**`, true)
             embed.addField("avatar url", `https://cdn.discordapp.com/avatars/${id}/${m.user.avatar}.png`, true)
-            embed.setThumbnail(`https://cdn.discordapp.com/avatars/${id}/${m.user.avatar}.png`, true)
+            embed.setThumbnail(`https://cdn.discordapp.com/avatars/${id}/${m.user.avatar}.png`)
             embeds[m.user.username] = embed
             count++
             if(count > 25) return {content: "more than 25 users found"}
@@ -458,7 +485,7 @@ roll:
             results.push(String(Math.floor(Math.random() * (max - min)) + min))
         }
         return {
-            content: results.join(sep)
+            content: results.join(sep).trim()
         }
     }, `roll [count="count"] [sep="sep"] min [max]`).setCategory("fun").setMeta({version: "1.0.0"})
 ,
@@ -470,7 +497,6 @@ changes:
             let versions = changes.split("---")
             for(let v of versions){
                 let updV = v.split("\n").filter(val => val ? true : false)
-                console.log(updV[0])
                 if(updV[0]?.match(this.content)){
                     rvChanges = v
                     break
@@ -540,7 +566,7 @@ ooc:
         for(let i = 0; i < count; i++){
             oocs.push(ooc[Math.floor(Math.random() * ooc.length)])
         }
-        return {content: oocs.join(sep)}
+        return {content: oocs.join(sep).trim()}
     }, "ooc [count=\"count\"] [sep=\"sep\"]").setMeta({version: "1.0.0"}).setCategory("fun")
 ,
 oocfile:
@@ -562,7 +588,7 @@ cmdmeta:
         for(let m in c.metaData){
             meta += `${m}: ${c.metaData[m]}\n`
         }
-        return {content: meta}
+        return {content: meta.trim()}
     }).setCategory("meta").setMeta({version: "1.0.0", meta: 'yes'})
 ,
 code:
