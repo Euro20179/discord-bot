@@ -27,6 +27,8 @@ class Command{
     optsString
     //this will change each time the command is called in discord, it refers to everything but the opts and command name
     _content
+    //changes each command, refers to MessageAttachment[]
+    attachments
     
     //used when things like {mention} shouldn't be replaced
     noSubstitution
@@ -118,6 +120,10 @@ class Command{
                 content: this.HELP()
             }
         }
+	this.attachments = []
+	for(let a of msg.attachments){
+	    this.attachments.push(a[1])
+	}
         this.optsString = optsString
         this._content = Command.getText(this.msg.content).replace(this.optsString, "")
         if(!this.noSubstitution) this._content = expandContent(this.content, msg)
