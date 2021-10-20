@@ -1,7 +1,9 @@
+//@ts-ignore
 function userMention(userid){
     return `<@!${userid}>`
 }
 
+//@ts-ignore
 function channelMention(channelId){
     return `<#${channelId}>`
 }
@@ -32,6 +34,7 @@ function strftime(format, timezone, time){
         .replace(/%%/g, "%")
 }
 
+//@ts-ignore
 function expandContent(text, msg, customExpansions, basic){
     basic = basic ?? true
     for(let e in customExpansions){

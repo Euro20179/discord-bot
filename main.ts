@@ -1,10 +1,20 @@
-const { Client, Intents, MessageActionRow, MessageEmbed, MessageButton, MessageSelectMenu } = require("discord.js")
+import { Message } from "discord.js"
+
+//@ts-ignore
+const { Client, Intents, MessageActionRow, MessageEmbed, MessageSelectMenu} = require("discord.js")
+//@ts-ignore
 const fs = require("fs")
+//@ts-ignore
 const { performance } = require("perf_hooks")
+//@ts-ignore
 const { exit } = require("process")
+//@ts-ignore
 const { Command, Alias } = require("./src/command.js")
+//@ts-ignore
 const https = require("https")
+//@ts-ignore
 const {createButton} = require("./src/interactives.js")
+//@ts-ignore
 const {expandContent, userMention, strftime, userFinder, formatp} = require("./src/util")
 const client = new Client(
     {
@@ -23,7 +33,7 @@ const PREFIX = "]"
 
 const VERSION = "1.0.3"
 
-let LAST_DELETED_MESSAGE
+let LAST_DELETED_MESSAGE: Message
 
 let userVars = {global: {}}
 
@@ -33,7 +43,7 @@ Command.setPrefix(PREFIX)
 
 const commands = {
 echo: 
-    new Command(function(msg, opts){
+    new Command(function(msg: Message, opts){
         if(!opts['D']) msg.delete().then().catch(reason => console.log("no delete perms"))
         if(opts["f"]){
             let ext = this.getAttr("ext") || 'txt'
@@ -218,9 +228,12 @@ spam:
         SPAM_STOP = false
         if(opts["d"]) await msg.delete()
         let _delay = this.getAttr('delay') || 1
+	let delay
         if(typeof _delay != "number" && _delay.indexOf(",") != -1){
             let [min, max] = _delay.split(",")
+	    //@ts-ignore
             max *= 1000
+	    //@ts-ignore
             min *= 1000
             delay = () => (Math.random() * (Number(max) - Number(min))) + Number(min)
         }

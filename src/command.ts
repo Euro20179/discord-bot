@@ -1,6 +1,16 @@
-const { userMention, channelMention, expandContent } = require("./util.js")
+import { Message, MessageAttachment, MessageOptions } from "discord.js"
 
-function parseOpts(text, optString){
+//@ts-ignore
+const { expandContent } = require("./util.js")
+
+interface Opts{
+    [val: string]: boolean
+}
+
+type Category = "fun" | "meta" | "util" | "admin"
+type UserIdString = string
+
+function parseOpts(text, optString): [Opts, string]{
     text = Command.stripPrefix(text)
     
     let optsString = ''
@@ -21,23 +31,29 @@ function parseOpts(text, optString){
 }
 class Command{
     //This will change each time the command is called in discord, it will refer to the message the user sent
-    msg
+    msg: Message
     //this will change each time the command is called in discord, it will refer to the opts given
-    optsString
+    optsString: string
+    opts: string
     //this will change each time the command is called in discord, it refers to everything but the opts and command name
-    _content
+    _content: string
     //changes each command, refers to MessageAttachment[]
-    attachments
+    attachments: MessageAttachment[]
     
     //used when things like {mention} shouldn't be replaced
-    noSubstitution
+    noSubstitution: boolean
 
-    metaData = {}
-    aliases
-    category
-    whiteList = []
-    blackList = []
-    PREFIX
+    metaData: {[val: string]: any} = {}
+    aliases: Alias[]
+    category: Category
+    whiteList: UserIdString[] = []
+    blackList: UserIdString[] = []
+    
+    help: string
+
+    static PREFIX: string
+    
+    onCall: (msg: Message, opts: Opts) => MessageOptions | string | Promise<MessageOptions | string | false> | false
     static escape(text){
         if(text[0] == this.PREFIX){
             return `\\${text}`
@@ -45,7 +61,7 @@ class Command{
 	return text
     }
     static setPrefix(PREFIX){
-	this.PREFIX = PREFIX
+        this.PREFIX = PREFIX
     }
     static stripPrefix(text){
         return text.slice(1)
@@ -110,7 +126,7 @@ class Command{
         this.metaData = metaData
         return this
     }
-    run(msg){
+    run(msg: Message){
         if(
             (this.whiteList.length > 0 && this.whiteList.indexOf(String(msg.author.id)) == -1)
             || (this.blackList.length > 0 && this.blackList.indexOf(String(msg.author.id)) >= 0)
@@ -123,10 +139,10 @@ class Command{
                 content: this.HELP()
             }
         }
-	this.attachments = []
-	for(let a of msg.attachments){
-	    this.attachments.push(a[1])
-	}
+        this.attachments = []
+        for(let a of msg.attachments){
+            this.attachments.push(a[1])
+        }
         this.optsString = optsString
         this._content = Command.getText(this.msg.content).replace(this.optsString, "")
         if(!this.noSubstitution) this._content = expandContent(this.content, msg)
@@ -135,6 +151,9 @@ class Command{
 }
 
 class Alias {
+    isAlias: boolean;
+    category: Category;
+    cmd: Command
     constructor(cmd){
         this.isAlias = true
         this.category = cmd.category

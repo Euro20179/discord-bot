@@ -6,6 +6,10 @@
 
 ## Fixes
 * version
+* [snipe won't repeat command if the deleted message was a command
+
+## Technical
+* convert to typescript
 
 ---
 
