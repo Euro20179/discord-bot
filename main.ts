@@ -1,7 +1,9 @@
-import { Message } from "discord.js"
+import { Client, Message, PartialMessage } from "discord.js"
+
+import {Collection} from "@discordjs/collection"
 
 //@ts-ignore
-const { Client, Intents, MessageActionRow, MessageEmbed, MessageSelectMenu} = require("discord.js")
+const { Intents, MessageActionRow, MessageEmbed, MessageSelectMenu} = require("discord.js")
 //@ts-ignore
 const fs = require("fs")
 //@ts-ignore
@@ -12,8 +14,8 @@ const { exit } = require("process")
 const { Command, Alias } = require("./src/command.js")
 //@ts-ignore
 const {createButton} = require("./src/interactives.js")
-//@ts-ignore
-const {expandContent, userMention, strftime, userFinder, formatp} = require("./src/util")
+import {userFinder} from "./src/util.js"
+const {expandContent, userMention, strftime, formatp} = require("./src/util")
 const client = new Client(
     {
         intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES, Intents.FLAGS.GUILD_MEMBERS, Intents.FLAGS.GUILD_EMOJIS_AND_STICKERS, Intents.FLAGS.GUILD_PRESENCES, Intents.FLAGS.GUILD_MESSAGE_REACTIONS, Intents.FLAGS.GUILD_MESSAGE_TYPING, Intents.FLAGS.GUILD_INTEGRATIONS],
@@ -29,9 +31,9 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.0.3"
+const VERSION = "1.0.4"
 
-let LAST_DELETED_MESSAGE: Message
+let LAST_DELETED_MESSAGE: Message | PartialMessage
 
 let userVars = {global: {}}
 
@@ -130,7 +132,8 @@ help:
                     else await i.update({embeds: [], components: [], content: "this *was* help"})
                 })
             }
-        ).catch(res => false)
+        ).catch(res => console.log(res))
+        console.log("hi")
         return false
     },
     "help [category]\ncategories:\n\tfun\n\tutil\n\tmeta", ""
@@ -349,11 +352,18 @@ vars:
 ,
 userid:
     new Command(function(msg, opts){
-        if(!this.content) return {content: 'no user given'}
-        let fmt = this.getAttr('fmt')
-        if(!fmt) fmt = "%i"
-        let members = userFinder(msg.guild, this.content)
+        let members
         let text = ''
+        let fmt = this.getAttr('fmt') || "%i"
+        if(opts["r"]){
+            let m = msg.guild.members.cache.random()
+            members = [[String(m.id), m]]
+        }
+        else if(!this.content) return {content: 'no user given'}
+        else{
+            if(!fmt) fmt = "%i"
+            members = userFinder(msg.guild, this.content)
+        }
         for(let member of members){
             if(opts["v"]) text += `${member[1].user.username}: `
             text += `${formatp(fmt, [
@@ -361,13 +371,13 @@ userid:
                 ["(?<!%)%m", userMention(member[0])],
                 ["(?<!%)%n", member[1].nickname],
                 ["(?<!%)%u", member[1].user.username],
-                ["(?<!%)%j", member[1].jointedAt],
+                ["(?<!%)%j", member[1].joinedAt],
                 ["(?<!%)%d", member[1].displayName],
                 ["(?<!%)%c", member[1].displayHexColor],
             ])}\n`
         }
         return text ? {content: text} : {content: "found no one"}
-    }, `userid [-v] [fmt=\"fmt\"] user\n-v: also say username
+    }, `userid [-vr] [fmt=\"fmt\"] user\n-v: also say username
 formats:
     %i: user id
     %m: mention
@@ -528,11 +538,11 @@ ooc:
 ,
 oocfile:
     new Command(function(msg, opts){
-	return {files: [{
-	    attachment: `./storage/ooc.list`,
-	    name: "ooc.json"
-	}]}
-    })
+        return {files: [{
+            attachment: `./storage/ooc.list`,
+            name: "ooc.json"
+        }]}
+    }).setCategory("util").setMeta({version: "1.0.3"})
 ,
 cmdmeta:
     new Command(function(msg, opts){
@@ -712,7 +722,7 @@ client.on("messageCreate", async (msg) => {
 })
 
 client.on("messageDelete", async(msg) => {
-    if([429650019726000129, 535251826128453662].indexOf(msg.channel.id) < 0){
+    if([429650019726000129, 535251826128453662].indexOf(Number(msg.channel.id)) < 0){
         LAST_DELETED_MESSAGE = msg
     }
 })
