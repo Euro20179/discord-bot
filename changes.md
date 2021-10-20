@@ -1,8 +1,25 @@
+# 1.0.3
+
+## Features
+* [oocfile
+* [echo now allows for {mention} etc...
+
+## Fixes
+* version
+* [snipe won't repeat command if the deleted message was a command
+
+## Technical
+* convert to typescript
+
+---
+
 # 1.0.2
+
+## Features
+* [addooc now accepts files
 
 ## Fixes
 * [changes
-* [addooc now accepts files
 
 ---
 

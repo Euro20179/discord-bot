@@ -1,0 +1,10 @@
+{
+    "compilerOptions": {
+        "module": "commonjs",
+        "downlevelIteration": true,
+        "target": "ES2021"
+    },
+    "exclude": [
+        "node_modules"
+    ]
+}
