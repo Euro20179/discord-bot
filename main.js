@@ -512,6 +512,14 @@ ooc:
         return {content: oocs.join(sep)}
     }, "ooc [count=\"count\"] [sep=\"sep\"]").setMeta({version: "1.0.0"}).setCategory("fun")
 ,
+oocfile:
+    new Command(function(msg, opts){
+	return {files: [{
+	    attachment: `./storage/ooc.list`,
+	    name: "ooc.json"
+	}]}
+    })
+,
 cmdmeta:
     new Command(function(msg, opts){
         let c = commands[this.content]
