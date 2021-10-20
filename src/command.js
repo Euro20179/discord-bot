@@ -1,4 +1,5 @@
 const { userMention, channelMention, expandContent } = require("./util.js")
+const {PREFIX} = require("../main.js")
 
 function parseOpts(text, optString){
     text = Command.stripPrefix(text)
