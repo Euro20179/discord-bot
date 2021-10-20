@@ -44,12 +44,18 @@ Command.setPrefix(PREFIX)
 const commands = {
 echo: 
     new Command(function(msg: Message, opts){
+        let replyTo: string | null = this.getAttr("reply") || null
+        let msgToReplyTo: Message | undefined
+        if(replyTo){
+            msgToReplyTo = msg.channel.messages.cache.find((val, key) => key == replyTo)
+        }
         if(!opts['D']) msg.delete().then().catch(reason => console.log("no delete perms"))
         if(opts["f"]){
             let ext = this.getAttr("ext") || 'txt'
             let fileName = this.getAttr("filename") || `${msg.author.id}-echo.${ext}`
             fs.writeFileSync(`./${msg.author.id}:echo.cmdresp`, this.content)
             return {
+                reply: msgToReplyTo,
                 files: [{
                     attachment: `./${msg.author.id}:echo.cmdresp`,
                     name: fileName
@@ -57,10 +63,11 @@ echo:
             }
         }
         return {
+            reply: msgToReplyTo,
             content: expandContent(this.content, msg)
         }
     }, 
-    'echo [-Df] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
+    'echo [-Df] [reply=\"messageid\"] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
 ,
 
 button: 
@@ -686,6 +693,17 @@ function runCmd(cmd, msg){
     return commands[cmd]?.run(msg)
 }
 
+async function sendFileMessage(msg, sendFn, resp){
+    let content = resp?.content || resp?.embed
+    fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
+        await sendFn({files: [{
+            attachment: `./${msg.author.id}.cmdresp`,
+            name: `${msg.author.id}.txt`
+        }]})
+        fs.unlinkSync(`./${msg.author.id}.cmdresp`)
+    })
+}
+
 client.on("messageCreate", async (msg) => {
     if(msg.content[0] == PREFIX){
         let cmd = Command.getCommand(msg.content)
@@ -696,20 +714,26 @@ client.on("messageCreate", async (msg) => {
                 resp = await resp
             }
             if(resp){
-                try{
-                    await msg.channel.send(resp)
+                if(resp.reply){
+                    try{
+                        await resp.reply.reply(resp)
+                    }
+                    catch(err){
+                        console.log(err)
+                        if(err.httpStatus){
+                            await sendFileMessage(msg, resp.reply.reply, resp)
+                        }
+                    }
                 }
-                catch(err){
-                    console.log(err)
-                    if(err.httpStatus){
-                        let content = resp?.content || resp?.embed
-                        fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
-                            await msg.channel.send({files: [{
-                                attachment: `./${msg.author.id}.cmdresp`,
-                                name: `${msg.author.id}.txt`
-                            }]})
-                            fs.unlinkSync(`./${msg.author.id}.cmdresp`)
-                        })
+                else{
+                    try{
+                        await msg.channel.send(resp)
+                    }
+                    catch(err){
+                        console.log(err)
+                        if(err.httpStatus){
+                            await sendFileMessage(msg, msg.channel.send, resp)
+                        }
                     }
                 }
                 fs.unlink(`./${msg.author.id}:${cmd}.cmdresp`, (err) => true)
