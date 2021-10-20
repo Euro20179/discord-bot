@@ -1,3 +1,10 @@
+# 1.1.0
+
+## Features
+* [echo reply="msgid"
+
+---
+
 # 1.0.4
 
 ## Features

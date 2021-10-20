@@ -31,7 +31,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.0.4"
+const VERSION = "1.1.0"
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
