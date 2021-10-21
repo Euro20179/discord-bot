@@ -31,7 +31,9 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.2.1"
+const VERSION = "1.2.2"
+
+let SPAMS = []
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
@@ -68,6 +70,24 @@ echo:
         }
     }, 
     'echo [-Df] [reply=\"messageid\"] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
+,
+
+unknown:
+    new Command(function(msg, opts){
+        return {content: "unknown", embeds: [new MessageEmbed({title: "unknown"})]}
+    }).setMeta({version: "unknown", unknown: undefined})
+,
+
+listspam:
+    new Command(function(msg, opts){
+        let rv = ""
+        for(let s in SPAMS){
+            let so = SPAMS[s]
+            rv += `${so.message} * ${so.count} - ${so.starter}\n`
+        }
+        return {content: rv.trim() || "no spams are running"}
+    }).setCategory("util").setMeta({version: "1.2.2"})
+
 ,
 
 embed:
@@ -212,7 +232,7 @@ reactiontime:
                 collector.on("collect", async i => {
                     let final = Date.now() - start
                     if(i.customId === `${msg.author.id}:reactiontime`){
-                        i.update({content: Math.random() > .99 ? 'https://tenor.com/view/dance-moves-dancing-singer-groovy-gif-17029825' : `${i.user.username}'s reaction time is: ${final / 1000}`, components: []}).then().catch(res => false)
+                        i.update({content: Math.random() > .995 ? 'https://tenor.com/view/dance-moves-dancing-singer-groovy-gif-17029825' : `${i.user.username}'s reaction time is: ${final / 1000}`, components: []}).then().catch(res => false)
                     }
                 })
             }
@@ -254,6 +274,9 @@ reverse:
 ,
 progressbar:
     new Command(function(msg, opts){
+        if(Math.random() > .99){
+            return {content: "progress has been made 😁"}
+        }
         let [min, pos, max] = this.content.split(" ")
         if(!min || !pos || !max) return {content: `Usage: [progressbar min at max`}
         min = Number(min)
@@ -276,7 +299,7 @@ progressbar:
     }, "progressbar min at max", "").setCategory("util").setMeta({version: "1.0.0"})
 ,
 spam:
-    new Command(async function(msg, opts){
+    new Command(async function(msg: Message, opts){
         SPAM_STOP = false
         if(opts["d"]) await msg.delete()
         let _delay = this.getAttr('delay') || 1
@@ -292,11 +315,19 @@ spam:
         else delay = () => Number(_delay) * 1000
         let count = Number(this.content.split(" ")[0])
         let message = this.content.split(" ").slice(1).join(" ")
+        const SPAMID = Math.floor(Math.random() * 100000)
+        SPAMS.push({
+            starter: msg.author.username, 
+            message: message,
+            count: count,
+            id: SPAMID
+        })
         for(let i = 0; i < count; i++){
             if(SPAM_STOP) break
             await msg.channel.send({content: message})
             await new Promise(res => setTimeout(res, delay()))
         }
+        SPAMS = SPAMS.filter((val, idx) => val.id != SPAMID)
         return {content: Math.random() > .99 ? `${userMention(msg.author.id)}'s spam has completed, have a nice day :)` : "done"}
     }, "spam [-d] x message [delay=\"delay\" **OR** delay=\"min-delay,max-delay\"]", "d").setCategory("fun").setMeta({version: "1.0.0"})
 ,
@@ -308,6 +339,9 @@ stop:
 ,
 ping: 
     new Command(function(msg, opts){
+        if(Math.random() > .995){
+            return {content: `heres your ping now go away ${Date.now() - msg.createdAt}`}
+        }
         return {content: `🏓 ${Date.now() - msg.createdAt}ms`} 
     }, "get ping in ms").setCategory('util').setMeta({version: "1.0.0"})
 ,
@@ -656,6 +690,7 @@ snipe:
             name: `8ball.json`
         }]}
     }).setCategory("util").setMeta({version: "1.2.0"})
+
 }
 
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)

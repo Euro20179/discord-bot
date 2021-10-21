@@ -1,3 +1,10 @@
+# 1.2.2
+
+## Additions
+* unknown
+* [listspam
+
+
 # 1.2.1
 
 ## Additions
