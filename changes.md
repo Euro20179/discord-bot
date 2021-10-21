@@ -1,7 +1,16 @@
+# 1.3.0_C
+
+## Fixes
+* tax for real
+
+---
+
 # 1.3.0_B
 
 ## Fixes
 * tax
+
+---
 
 # 1.3.0
 
