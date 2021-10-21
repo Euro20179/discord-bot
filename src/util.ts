@@ -1,5 +1,7 @@
 import { Guild, GuildMember } from "discord.js"
 import {Collection} from "@discordjs/collection"
+const https = require("https")
+const fs = require("fs")
 
 //@ts-ignore
 function userMention(userid){
@@ -66,5 +68,5 @@ module.exports = {
     expandContent: expandContent,
     strftime: strftime,
     userFinder: userFinder,
-    formatp: formatp
+    formatp: formatp,
 }
