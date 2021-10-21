@@ -31,7 +31,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.1.0.1"
+const VERSION = "1.1.0.2"
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
@@ -741,26 +741,25 @@ client.on("messageCreate", async (msg) => {
                 resp = await resp
             }
             if(resp){
-                if(resp.reply){
-                    try{
-                        await resp.reply.reply(resp)
-                    }
-                    catch(err){
-                        console.log(err)
-                        if(err.httpStatus){
-                            await sendFileMessage(msg, resp.reply.reply, resp)
-                        }
-                    }
+                try{
+                    if(!resp.reply) await msg.channel.send(resp)
+                    else await resp.reply.reply(resp)
                 }
-                else{
-                    try{
-                        await msg.channel.send(resp)
-                    }
-                    catch(err){
-                        console.log(err)
-                        if(err.httpStatus){
-                            await sendFileMessage(msg, msg.channel.send, resp)
-                        }
+                catch(err){
+                    console.log(err)
+                    if(err.httpStatus){
+                        let content = resp?.content || resp?.embed
+                        fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
+                            if(!resp.reply) await msg.channel.send({files: [{
+                                                attachment: `./${msg.author.id}.cmdresp`,
+                                                name: `${msg.author.id}.txt`
+                                            }]})
+                            else await resp.reply.reply({files: [{
+                                    attachment: `./${msg.author.id}.cmdresp`,
+                                    name: `${msg.author.id}.txt`
+                                }]})
+                            fs.unlinkSync(`./${msg.author.id}.cmdresp`)
+                        })
                     }
                 }
                 fs.unlink(`./${msg.author.id}:${cmd}.cmdresp`, (err) => true)
