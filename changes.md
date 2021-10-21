@@ -1,3 +1,10 @@
+# 1.1.0.2
+
+## Fixes
+* When message is too long bot won't crash
+
+---
+
 # 1.1.0.1
 
 ## Fixes
