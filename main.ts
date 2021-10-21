@@ -83,10 +83,8 @@ embed:
             return {embeds: [embed]}
         }
         catch(err){}
-        let thumbnail = this.getAttr("thumb") || undefined;
-        let image = this.getAttr("img") || undefined;
-        embed.setThumbnail(thumbnail)
-        embed.setImage(image)
+        embed.setThumbnail(this.getAttr("thumb"))
+        embed.setImage(this.getAttr("img"))
         embed.setFooter(this.getAttr("footer") || "")
         embed.setAuthor(this.getAttr("author") || "")
         embed.title = this.content.split("\n")[0]
