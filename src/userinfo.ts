@@ -5,13 +5,14 @@ export class UserInfo{
     id: string
     lastTalked: number
     lastTaxed: number
-    static taxRate: number = 1.01
+    taxRate: number
     get json(){
         return {
             money: this.money, 
             id: this.id, 
             lastTalked: this.lastTalked,
             lastTaxed: this.lastTaxed,
+            taxRate: this.taxRate
         }
     }
     setMoney(newMoney){
@@ -22,6 +23,7 @@ export class UserInfo{
         this.id = id
         this.lastTalked = 0
         this.lastTaxed = 0
+        this.taxRate = 1.01
     }
     static fromJson({id, money, lastTalked, lastTaxed}) {
         let u = new UserInfo({id: id, money: money}) 
@@ -39,8 +41,12 @@ export class UserInfo{
             else this.money *= 1.01
         }
     }
+    timeSinceTax(){
+        return (Date.now() - this.lastTaxed) / (60 * 60 * 1000)
+    }
     tax(){
-        let newMoney = this.money / UserInfo.taxRate
+        let newMoney = this.money / this.taxRate
+        this.taxRate = 1.01
         let rv = this.money - newMoney
         this.money = newMoney
         return rv

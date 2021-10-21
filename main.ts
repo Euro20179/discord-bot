@@ -717,9 +717,14 @@ money:
 ,
 profile:
     new Command(function(msg, opts){
+        let user = msg.author.id
+        if(this.content) {
+            let u = userFinder(msg.guild, this.content)
+            user = u.first().id
+        }
         let data = ""
-        for(let i in users[msg.author.id]){
-            data += `${i}: ${users[msg.author.id][i]}\n`
+        for(let i in users[user]){
+            data += `${i}: ${users[user][i]}\n`
         }
         return {content: data.trim()}
     }).setCategory("economy").setMeta({version: "1.3.0"})
@@ -742,8 +747,8 @@ leaderboard:
 ,
 tax:
     new Command(function(msg, opts){
-        if(!(Date.now() - users[msg.author.id].lastTaxed > 60 * 60 * 24 * 1000)){
-            return {content: "You have already taxed someone within the past day"}
+        if(users[msg.author.id].timeSinceTax() > 0){
+            return {content: `You have already taxed someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceTax()) * 60}minutes`}
         }
         users[msg.author.id].lastTaxed = Date.now()
         let u = userFinder(msg.guild, this.content)
@@ -759,6 +764,10 @@ tax:
             }
             users[msg.author.id].money += taxAmount
             break
+        }
+        for(let ui in users){
+            if(ui == user[1].id)
+            users[ui].taxRate += 0.01
         }
         return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
     })

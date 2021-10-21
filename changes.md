@@ -7,7 +7,7 @@
     * [leaderboard
     * [tax
     * you get 1% added to your total money each minute you talk
-    * you can tax people, each person can be taxed once every 24 hours
+    * you can tax someone once per day (the tax rate is 1%)
 
 ---
 
