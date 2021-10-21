@@ -3,13 +3,25 @@ import { Client, Message, PartialMessage, MessageEmbed } from "discord.js"
 import {Collection} from "@discordjs/collection"
 
 import {UserInfo} from "./src/userinfo"
+//
+//@ts-ignore
+const fs = require("fs")
 
 let users: {[id: string]: UserInfo} = {}
+fs.readdir('./storage', (err, files) => {
+    if(err){ console.log(err); return}
+    files.forEach(file => {
+        if(file.match(/^[0-9]{18}\.json/)){
+            let id = file.split(".")[0]
+            if(users[id]) return
+            let d = fs.readFileSync(`./storage/${file}`).toString()
+            if(d) users[id] = UserInfo.fromJson(JSON.parse(d))
+        }
+    })
+})
 
 //@ts-ignore
 const { Intents, MessageActionRow, MessageSelectMenu} = require("discord.js")
-//@ts-ignore
-const fs = require("fs")
 //@ts-ignore
 const { performance } = require("perf_hooks")
 //@ts-ignore
@@ -714,20 +726,9 @@ profile:
 ,
 leaderboard:
     new Command(function(msg: Message, opts){
-        let tmpUsers = users
-        fs.readdir('./storage', (err, files) => {
-            if(err){ console.log(err); return}
-            files.forEach(file => {
-                if(file.match(/^[0-9]{18}\.json/)){
-                    let id = file.split(".")[0]
-                    if(users[id]) return
-                    let d = fs.readFileSync(`./storage/${file}`).toString()
-                    if(d) tmpUsers[id] = UserInfo.fromJson(JSON.parse(d))
-                }
-            })
             let moneys = []
-            for(let user in tmpUsers){
-                moneys.push([user, tmpUsers[user]["money"]])
+            for(let user in users){
+                moneys.push([user, users[user]["money"]])
             }
             moneys = moneys.sort((a, b) => a[1] > b[1] ? -1 : 1)
             let embed = new MessageEmbed({title: "Leaderboard"})
@@ -736,7 +737,6 @@ leaderboard:
                 embed.addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
             }
             msg.channel.send({embeds: [embed]}).then(res => true).catch(res => true)
-        })
         return false
     })
 }
@@ -862,17 +862,6 @@ function runCmd(cmd, msg){
     return commands[cmd]?.run(msg)
 }
 
-async function sendFileMessage(msg, sendFn, resp){
-    let content = resp?.content || resp?.embed
-    fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
-        await sendFn({files: [{
-            attachment: `./${msg.author.id}.cmdresp`,
-            name: `${msg.author.id}.txt`
-        }]})
-        fs.unlinkSync(`./${msg.author.id}.cmdresp`)
-    })
-}
-
 async function doCmd(msg: Message | PartialMessage){
     let cmd = Command.getCommand(msg.content)
     let resp = runCmd(cmd, msg)
@@ -913,13 +902,7 @@ async function doCmd(msg: Message | PartialMessage){
 
 client.on("messageCreate", async (msg) => {
     if(!users[msg.author.id]){
-        try{
-            let data = fs.readFileSync(`./storage/${msg.author.id}.json`)
-            users[msg.author.id] = UserInfo.fromJson(JSON.parse(data.toString()))
-        }
-        catch(err){
-            users[msg.author.id] = new UserInfo({id: msg.author.id, money: 0})
-        }
+        users[msg.author.id] = new UserInfo({id: msg.author.id, money: 0})
     }
     users[msg.author.id]?.talk()
     if(msg.content[0] == PREFIX){
