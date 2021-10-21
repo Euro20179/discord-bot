@@ -1,3 +1,5 @@
+import { randint } from "./util";
+
 const fs = require('fs');
 
 export class UserInfo{

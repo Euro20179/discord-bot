@@ -62,6 +62,10 @@ export function userFinder(guild: Guild, text: string): Collection<string, Guild
     return members
 }
 
+export function randint(max: number, min: number){
+    return Math.floor(Math.random() * (max - min)) + min
+}
+
 module.exports = {
     userMention: userMention,
     channelMention: channelMention,
@@ -69,4 +73,5 @@ module.exports = {
     strftime: strftime,
     userFinder: userFinder,
     formatp: formatp,
+    randint: randint
 }

@@ -1,3 +1,10 @@
+# 1.3.1
+
+## Fixes
+* tax rate increase
+
+---
+
 # 1.3.0_C
 
 ## Fixes
