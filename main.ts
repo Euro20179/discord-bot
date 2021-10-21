@@ -31,7 +31,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.1.1"
+const VERSION = "1.2.0"
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
@@ -633,7 +633,7 @@ snipe:
         resps.push(addResp)
         fs.writeFileSync('./storage/8ball.list', JSON.stringify(resps))
         return {content: `added ${addResp}`}
-    }).setCategory("fun").setMeta({"version": "1.1.1"})
+    }).setCategory("fun").setMeta({"version": "1.2.0"})
 ,
 "rm8ball":
     new Command(function(msg, opts){
@@ -641,13 +641,13 @@ snipe:
         resps = resps.filter(val => val != this.content)
         fs.writeFileSync('./storage/8ball.list', JSON.stringify(resps))
         return {content: `removed: "${this.content}"`}
-    }).setCategory("fun").setMeta({version: "1.1.1"})
+    }).setCategory("fun").setMeta({version: "1.2.0"})
 ,
 "8ball":
     new Command(function(msg, opts){
         let resp = JSON.parse(fs.readFileSync('./storage/8ball.list').toString())
         return {content: resp[Math.floor(Math.random() * resp.length)]}
-    }).setCategory("fun").setMeta({version: "1.1.1"})
+    }).setCategory("fun").setMeta({version: "1.2.0"})
 ,
 "8bfile": 
     new Command(function(msg, opts){
@@ -655,7 +655,7 @@ snipe:
             attachment: `./storage/8ball.list`,
             name: `8ball.json`
         }]}
-    }).setCategory("util").setMeta({version: "1.1.1"})
+    }).setCategory("util").setMeta({version: "1.2.0"})
 }
 
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)
