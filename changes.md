@@ -1,3 +1,10 @@
+# 1.2.1
+
+## Additions
+* {content}, {mention}, {author}, {channel} in a8
+
+---
+
 # 1.2.0
 
 ## Additions
