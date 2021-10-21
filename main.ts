@@ -80,7 +80,12 @@ unknown:
 
 listspam:
     new Command(function(msg, opts){
-        return {content: SPAMS.join("\n") || "no spams are running"}
+        let rv = ""
+        for(let s in SPAMS){
+            let so = SPAMS[s]
+            rv += `${so.message} * ${so.count} - ${so.starter}\n`
+        }
+        return {content: rv.trim() || "no spams are running"}
     }).setCategory("util").setMeta({version: "1.2.2"})
 
 ,
@@ -310,13 +315,19 @@ spam:
         else delay = () => Number(_delay) * 1000
         let count = Number(this.content.split(" ")[0])
         let message = this.content.split(" ").slice(1).join(" ")
-        SPAMS.push(`${message} * ${count} - ${msg.author.username}`)
+        const SPAMID = Math.floor(Math.random() * 100000)
+        SPAMS.push({
+            starter: msg.author.username, 
+            message: message,
+            count: count,
+            id: SPAMID
+        })
         for(let i = 0; i < count; i++){
             if(SPAM_STOP) break
             await msg.channel.send({content: message})
             await new Promise(res => setTimeout(res, delay()))
         }
-        SPAMS = SPAMS.filter((val, idx) => val != `${message} * ${count}`)
+        SPAMS = SPAMS.filter((val, idx) => val.id != SPAMID)
         return {content: Math.random() > .99 ? `${userMention(msg.author.id)}'s spam has completed, have a nice day :)` : "done"}
     }, "spam [-d] x message [delay=\"delay\" **OR** delay=\"min-delay,max-delay\"]", "d").setCategory("fun").setMeta({version: "1.0.0"})
 ,
