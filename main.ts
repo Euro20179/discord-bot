@@ -31,7 +31,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.1.0.2"
+const VERSION = "1.2.0"
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
@@ -72,15 +72,19 @@ echo:
 
 embed:
     new Command(function(msg: Message, opts){
+        if(opts["d"]) msg.delete().then(res => false).catch(res => console.log(res))
         const color = this.getAttr("color") || "black"
         let embed = new MessageEmbed({
             color: color,
             description: this.getAttr("description") || undefined,
         })
-        let thumbnail = this.getAttr("thumb") || undefined;
-        let image = this.getAttr("img") || undefined;
-        embed.setThumbnail(thumbnail)
-        embed.setImage(image)
+        try{
+            embed = new MessageEmbed(JSON.parse(this.content))            
+            return {embeds: [embed]}
+        }
+        catch(err){}
+        embed.setThumbnail(this.getAttr("thumb"))
+        embed.setImage(this.getAttr("img"))
         embed.setFooter(this.getAttr("footer") || "")
         embed.setAuthor(this.getAttr("author") || "")
         embed.title = this.content.split("\n")[0]
@@ -92,10 +96,13 @@ embed:
             if(["false", "true", undefined].indexOf(inline) == -1) return {content: "inline must be true or false"}
             embed.addField(name, value, inline == "true" ? true : false)
         }
+        if(opts["j"]){
+            return {content: JSON.stringify(embed.toJSON())}
+        }
         return {
             embeds: [embed]
         }
-    }, "embed [author=\"author\"] [color=\"color\"] [description=\"description\"] [footer=\"footer\"] [img=\"img\"] [thumb=\"thumb\"] title\nfieldname | fieldvalue\n...")
+    }, "embed [-dj] [author=\"author\"] [color=\"color\"] [description=\"description\"] [footer=\"footer\"] [img=\"img\"] [thumb=\"thumb\"] title\nfieldname | fieldvalue\n...\n-d: delete message\n-j: return JSON of embed", "d").setCategory("fun")
 ,
 
 button: 
@@ -149,21 +156,31 @@ help:
             }
             else{
                 embeds[c.category] = new MessageEmbed({title: c.category, description: "see [cmd -h for more info"})
+                embeds[c.category].addField(cmd, c.aliases.join(" ") || cmd, true)
             }
         }
-        const row = new MessageActionRow()
+        let row = new MessageActionRow()
+        let rows = []
+        let i = 0
         for(let c in embeds){
+            if(i == 4) {
+                i = 0
+                rows.push(row)
+                row = new MessageActionRow()
+            }
             row.addComponents(createButton(c, c, "PRIMARY"))
+            i++
         }
-        row.addComponents(createButton("help:button:quit", "stop", "DANGER"))
+        if(i > 0) rows.push(row)
+        //row.addComponents(createButton("help:button:quit", "stop", "DANGER"))
         let cat = "fun"
         if(this.content in embeds) cat = this.content
-        msg.channel.send({embeds: [embeds[cat]], components: [row]}).then(
+        msg.channel.send({embeds: [embeds[cat]], components: rows}).then(
             res => {
                 const collector = msg.channel.createMessageComponentCollector({filter: i => i.user.id == msg.author.id, time: 300 * 1000})
                 collector.on("collect", async i => {
                     if(i.customId != "help:button:quit")
-                        await i.update({embeds: [embeds[i.customId]], components: [row]})
+                        await i.update({embeds: [embeds[i.customId]], components: rows})
                     else await i.update({embeds: [], components: [], content: "this *was* help"})
                 })
             }
@@ -602,8 +619,50 @@ snipe:
         if(opts["d"]){msg.delete().then(res => false).catch(res => false)}
         return {content: `${Command.escape(LAST_DELETED_MESSAGE.content)}\n-${userMention(LAST_DELETED_MESSAGE.author.id)}`}
     }, "snipe [-d]", "d").setCategory("fun").setMeta({"version": "1.0.0", evil: "yes"})
+,
+"add8ball":
+    new Command(function(msg, opts){
+        let resps
+        try{
+            resps = JSON.parse(fs.readFileSync('./storage/8ball.list').toString())
+        }
+        catch(err){
+            resps = []
+        }
+        let addResp = this.content
+        resps.push(addResp)
+        fs.writeFileSync('./storage/8ball.list', JSON.stringify(resps))
+        return {content: `added ${addResp}`}
+    }).setCategory("fun").setMeta({"version": "1.2.0"})
+,
+"rm8ball":
+    new Command(function(msg, opts){
+        let resps = JSON.parse(fs.readFileSync(`./storage/8ball.list`))
+        resps = resps.filter(val => val != this.content)
+        fs.writeFileSync('./storage/8ball.list', JSON.stringify(resps))
+        return {content: `removed: "${this.content}"`}
+    }).setCategory("fun").setMeta({version: "1.2.0"})
+,
+"8ball":
+    new Command(function(msg, opts){
+        let resp = JSON.parse(fs.readFileSync('./storage/8ball.list').toString())
+        return {content: resp[Math.floor(Math.random() * resp.length)]}
+    }).setCategory("fun").setMeta({version: "1.2.0"})
+,
+"8bfile": 
+    new Command(function(msg, opts){
+        return {files: [{
+            attachment: `./storage/8ball.list`,
+            name: `8ball.json`
+        }]}
+    }).setCategory("util").setMeta({version: "1.2.0"})
 }
 
+commands["8bfile"].registerAlias(["8f", "8bf"], commands)
+commands["8ball"].registerAlias(["8", "8b"], commands)
+commands["add8ball"].registerAlias(["add8", "add8b", "a8", "a8b", "8bradd", "8br"], commands)
+commands["rm8ball"].registerAlias(["rm8", "rm8b", "8brdel", "8bdel"], commands)
+commands["timeguesser"].registerAlias(["tg"], commands)
 commands["code"].registerAlias(["src"], commands)
 commands["echo"].registerAlias(["e"], commands)
 commands["reverse"].registerAlias(["rev"], commands)
@@ -731,43 +790,53 @@ async function sendFileMessage(msg, sendFn, resp){
     })
 }
 
+async function doCmd(msg: Message | PartialMessage){
+    let cmd = Command.getCommand(msg.content)
+    let resp = runCmd(cmd, msg)
+    if(resp){
+        if(resp.then){
+            //some functions can be async
+            resp = await resp
+        }
+        if(resp){
+            try{
+                if(!resp.reply) await msg.channel.send(resp)
+                else await resp.reply.reply(resp)
+            }
+            catch(err){
+                console.log(err)
+                if(err.httpStatus){
+                    let content = resp?.content || resp?.embed
+                    fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
+                        if(!resp.reply) await msg.channel.send({files: [{
+                                            attachment: `./${msg.author.id}.cmdresp`,
+                                            name: `${msg.author.id}.txt`
+                                        }]})
+                        else await resp.reply.reply({files: [{
+                                attachment: `./${msg.author.id}.cmdresp`,
+                                name: `${msg.author.id}.txt`
+                            }]})
+                        fs.unlinkSync(`./${msg.author.id}.cmdresp`)
+                    })
+                }
+            }
+            fs.unlink(`./${msg.author.id}:${cmd}.cmdresp`, (err) => true)
+        }
+    }
+    else if(resp != false){
+        msg.channel.send(`${cmd} does not exist`)
+    }
+}
+
 client.on("messageCreate", async (msg) => {
     if(msg.content[0] == PREFIX){
-        let cmd = Command.getCommand(msg.content)
-        let resp = runCmd(cmd, msg)
-        if(resp){
-            if(resp.then){
-                //some functions can be async
-                resp = await resp
-            }
-            if(resp){
-                try{
-                    if(!resp.reply) await msg.channel.send(resp)
-                    else await resp.reply.reply(resp)
-                }
-                catch(err){
-                    console.log(err)
-                    if(err.httpStatus){
-                        let content = resp?.content || resp?.embed
-                        fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
-                            if(!resp.reply) await msg.channel.send({files: [{
-                                                attachment: `./${msg.author.id}.cmdresp`,
-                                                name: `${msg.author.id}.txt`
-                                            }]})
-                            else await resp.reply.reply({files: [{
-                                    attachment: `./${msg.author.id}.cmdresp`,
-                                    name: `${msg.author.id}.txt`
-                                }]})
-                            fs.unlinkSync(`./${msg.author.id}.cmdresp`)
-                        })
-                    }
-                }
-                fs.unlink(`./${msg.author.id}:${cmd}.cmdresp`, (err) => true)
-            }
-        }
-        else if(resp != false){
-            msg.channel.send(`${cmd} does not exist`)
-        }
+        await doCmd(msg)
+    }
+})
+
+client.on("messageUpdate", async (oldMsg, msg) => {
+    if(msg.content[0] == PREFIX){
+        await doCmd(msg)
     }
 })
 

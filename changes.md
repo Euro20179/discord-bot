@@ -1,3 +1,21 @@
+# 1.2.0
+
+## Additions
+* [embed -d
+* [embed -j
+* embed now accepts json
+* commands work on edit
+
+* 8ball
+* 8br
+* 8brdel
+* 8bf
+
+## Fixes
+* help
+
+---
+
 # 1.1.0.2
 
 ## Fixes
