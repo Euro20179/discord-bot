@@ -742,6 +742,10 @@ leaderboard:
 ,
 tax:
     new Command(function(msg, opts){
+        if(!(Date.now() - users[msg.author.id].lastTaxed > 60 * 60 * 24 * 1000)){
+            return {content: "You have already taxed someone within the past day"}
+        }
+        users[msg.author.id].lastTaxed = Date.now()
         let u = userFinder(msg.guild, this.content)
         let taxAmount
         let user
