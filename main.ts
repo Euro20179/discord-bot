@@ -31,7 +31,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.2.0"
+const VERSION = "1.2.1"
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
@@ -646,7 +646,7 @@ snipe:
 "8ball":
     new Command(function(msg, opts){
         let resp = JSON.parse(fs.readFileSync('./storage/8ball.list').toString())
-        return {content: resp[Math.floor(Math.random() * resp.length)]}
+        return {content: expandContent(resp[Math.floor(Math.random() * resp.length)], msg, {content: this.content.trim() || "?"})}
     }).setCategory("fun").setMeta({version: "1.2.0"})
 ,
 "8bfile": 
