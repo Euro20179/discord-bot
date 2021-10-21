@@ -2,6 +2,10 @@ import { Client, Message, PartialMessage, MessageEmbed } from "discord.js"
 
 import {Collection} from "@discordjs/collection"
 
+import {UserInfo} from "./src/userinfo"
+
+let users: {[id: string]: UserInfo} = {}
+
 //@ts-ignore
 const { Intents, MessageActionRow, MessageSelectMenu} = require("discord.js")
 //@ts-ignore
@@ -31,7 +35,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.2.2"
+const VERSION = "1.3.0"
 
 let SPAMS = []
 
@@ -580,6 +584,9 @@ time:
 ,
 END:
     new Command(function(msg, opts){
+        for(let user in users){
+            users[user].save(`./storage/${user}.json`)
+        }
         msg.channel.send("Exiting").then(
             res => exit()
         )
@@ -690,7 +697,48 @@ snipe:
             name: `8ball.json`
         }]}
     }).setCategory("util").setMeta({version: "1.2.0"})
-
+,
+money:
+    new Command(function(msg, opts){
+        return {content: String(users[msg.author.id].money)}
+    }).setCategory("economy").setMeta({version: "1.3.0"})
+,
+profile:
+    new Command(function(msg, opts){
+        let data = ""
+        for(let i in users[msg.author.id]){
+            data += `${i}: ${users[msg.author.id][i]}\n`
+        }
+        return {content: data.trim()}
+    }).setCategory("economy").setMeta({version: "1.3.0"})
+,
+leaderboard:
+    new Command(function(msg: Message, opts){
+        let tmpUsers = users
+        fs.readdir('./storage', (err, files) => {
+            if(err){ console.log(err); return}
+            files.forEach(file => {
+                if(file.match(/^[0-9]{18}\.json/)){
+                    let id = file.split(".")[0]
+                    if(users[id]) return
+                    let d = fs.readFileSync(`./storage/${file}`).toString()
+                    if(d) tmpUsers[id] = UserInfo.fromJson(JSON.parse(d))
+                }
+            })
+            let moneys = []
+            for(let user in tmpUsers){
+                moneys.push([user, tmpUsers[user]["money"]])
+            }
+            moneys = moneys.sort((a, b) => a[1] > b[1] ? -1 : 1)
+            let embed = new MessageEmbed({title: "Leaderboard"})
+            for(let i = 0; i < 10; i++){
+                if(!moneys[i]) break
+                embed.addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
+            }
+            msg.channel.send({embeds: [embed]}).then(res => true).catch(res => true)
+        })
+        return false
+    })
 }
 
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)
@@ -864,9 +912,20 @@ async function doCmd(msg: Message | PartialMessage){
 }
 
 client.on("messageCreate", async (msg) => {
+    if(!users[msg.author.id]){
+        try{
+            let data = fs.readFileSync(`./storage/${msg.author.id}.json`)
+            users[msg.author.id] = UserInfo.fromJson(JSON.parse(data.toString()))
+        }
+        catch(err){
+            users[msg.author.id] = new UserInfo({id: msg.author.id, money: 0})
+        }
+    }
+    users[msg.author.id]?.talk()
     if(msg.content[0] == PREFIX){
         await doCmd(msg)
     }
+    users[msg.author.id]?.save(`./storage/${msg.author.id}.json`)
 })
 
 client.on("messageUpdate", async (oldMsg, msg) => {

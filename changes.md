@@ -1,3 +1,14 @@
+# 1.3.0
+
+## Additions
+* economy
+    * [money
+    * [profile
+    * [leaderboard
+    * you get 1% added to your total money each minute you talk
+
+---
+
 # 1.2.2
 
 ## Additions
