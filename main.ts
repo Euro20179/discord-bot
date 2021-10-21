@@ -102,7 +102,7 @@ embed:
         return {
             embeds: [embed]
         }
-    }, "embed [-dj] [author=\"author\"] [color=\"color\"] [description=\"description\"] [footer=\"footer\"] [img=\"img\"] [thumb=\"thumb\"] title\nfieldname | fieldvalue\n...\n-d: delete message\n-j: return JSON of embed", "d")
+    }, "embed [-dj] [author=\"author\"] [color=\"color\"] [description=\"description\"] [footer=\"footer\"] [img=\"img\"] [thumb=\"thumb\"] title\nfieldname | fieldvalue\n...\n-d: delete message\n-j: return JSON of embed", "d").setCategory("fun")
 ,
 
 button: 
@@ -156,21 +156,31 @@ help:
             }
             else{
                 embeds[c.category] = new MessageEmbed({title: c.category, description: "see [cmd -h for more info"})
+                embeds[c.category].addField(cmd, c.aliases.join(" ") || cmd, true)
             }
         }
-        const row = new MessageActionRow()
+        let row = new MessageActionRow()
+        let rows = []
+        let i = 0
         for(let c in embeds){
+            if(i == 4) {
+                i = 0
+                rows.push(row)
+                row = new MessageActionRow()
+            }
             row.addComponents(createButton(c, c, "PRIMARY"))
+            i++
         }
-        row.addComponents(createButton("help:button:quit", "stop", "DANGER"))
+        if(i > 0) rows.push(row)
+        //row.addComponents(createButton("help:button:quit", "stop", "DANGER"))
         let cat = "fun"
         if(this.content in embeds) cat = this.content
-        msg.channel.send({embeds: [embeds[cat]], components: [row]}).then(
+        msg.channel.send({embeds: [embeds[cat]], components: rows}).then(
             res => {
                 const collector = msg.channel.createMessageComponentCollector({filter: i => i.user.id == msg.author.id, time: 300 * 1000})
                 collector.on("collect", async i => {
                     if(i.customId != "help:button:quit")
-                        await i.update({embeds: [embeds[i.customId]], components: [row]})
+                        await i.update({embeds: [embeds[i.customId]], components: rows})
                     else await i.update({embeds: [], components: [], content: "this *was* help"})
                 })
             }
@@ -609,8 +619,49 @@ snipe:
         if(opts["d"]){msg.delete().then(res => false).catch(res => false)}
         return {content: `${Command.escape(LAST_DELETED_MESSAGE.content)}\n-${userMention(LAST_DELETED_MESSAGE.author.id)}`}
     }, "snipe [-d]", "d").setCategory("fun").setMeta({"version": "1.0.0", evil: "yes"})
+,
+"add8ball":
+    new Command(function(msg, opts){
+        let resps
+        try{
+            resps = JSON.parse(fs.readFileSync('./storage/8ball.list').toString())
+        }
+        catch(err){
+            resps = []
+        }
+        let addResp = this.content
+        resps.push(addResp)
+        fs.writeFileSync('./storage/8ball.list', JSON.stringify(resps))
+        return {content: `added ${addResp}`}
+    }).setCategory("fun").setMeta({"version": "1.1.1"})
+,
+"rm8ball":
+    new Command(function(msg, opts){
+        let resps = JSON.parse(fs.readFileSync(`./storage/8ball.list`))
+        resps = resps.filter(val => val != this.content)
+        fs.writeFileSync('./storage/8ball.list', JSON.stringify(resps))
+        return {content: `removed: "${this.content}"`}
+    }).setCategory("fun").setMeta({version: "1.1.1"})
+,
+"8ball":
+    new Command(function(msg, opts){
+        let resp = JSON.parse(fs.readFileSync('./storage/8ball.list').toString())
+        return {content: resp[Math.floor(Math.random() * resp.length)]}
+    }).setCategory("fun").setMeta({version: "1.1.1"})
+,
+"8bfile": 
+    new Command(function(msg, opts){
+        return {files: [{
+            attachment: `./storage/8ball.list`,
+            name: `8ball.json`
+        }]}
+    }).setCategory("util").setMeta({version: "1.1.1"})
 }
 
+commands["8bfile"].registerAlias(["8f", "8bf"], commands)
+commands["8ball"].registerAlias(["8", "8b"], commands)
+commands["add8ball"].registerAlias(["add8", "add8b", "a8", "a8b", "8bradd", "8br"], commands)
+commands["rm8ball"].registerAlias(["rm8", "rm8b", "8brdel", "8bdel"], commands)
 commands["timeguesser"].registerAlias(["tg"], commands)
 commands["code"].registerAlias(["src"], commands)
 commands["echo"].registerAlias(["e"], commands)
