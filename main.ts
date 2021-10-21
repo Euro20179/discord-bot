@@ -726,21 +726,41 @@ profile:
 ,
 leaderboard:
     new Command(function(msg: Message, opts){
-            let moneys = []
-            for(let user in users){
-                moneys.push([user, users[user]["money"]])
-            }
-            moneys = moneys.sort((a, b) => a[1] > b[1] ? -1 : 1)
-            let embed = new MessageEmbed({title: "Leaderboard"})
-            for(let i = 0; i < 10; i++){
-                if(!moneys[i]) break
-                embed.addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
-            }
-            msg.channel.send({embeds: [embed]}).then(res => true).catch(res => true)
+        let moneys = []
+        for(let user in users){
+            moneys.push([user, users[user]["money"]])
+        }
+        moneys = moneys.sort((a, b) => a[1] > b[1] ? -1 : 1)
+        let embed = new MessageEmbed({title: "Leaderboard"})
+        for(let i = 0; i < 10; i++){
+            if(!moneys[i]) break
+            embed.addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
+        }
+        msg.channel.send({embeds: [embed]}).then(res => true).catch(res => true)
         return false
+    }).setCategory("economy").setMeta({version: "1.3.0"})
+,
+tax:
+    new Command(function(msg, opts){
+        let u = userFinder(msg.guild, this.content)
+        let taxAmount
+        let user
+        for(user of u){
+            if(!users[user[1].id]){
+                return {content: `${user[1].user.username} does not have a profile`}
+            }
+            taxAmount = users[user[1].id].tax()
+            if(taxAmount == 0){
+                return {content: `${user[1].user.username} has been taxed today`}
+            }
+            users[msg.author.id].money += taxAmount
+            break
+        }
+        return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
     })
 }
 
+commands["leaderboard"].registerAlias(["lb", "top"], commands)
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)
 commands["8ball"].registerAlias(["8", "8b"], commands)
 commands["add8ball"].registerAlias(["add8", "add8b", "a8", "a8b", "8bradd", "8br"], commands)
