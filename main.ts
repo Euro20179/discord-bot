@@ -31,7 +31,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.1.0.2"
+const VERSION = "1.1.1"
 
 let LAST_DELETED_MESSAGE: Message | PartialMessage
 
@@ -72,11 +72,17 @@ echo:
 
 embed:
     new Command(function(msg: Message, opts){
+        if(opts["d"]) msg.delete().then(res => false).catch(res => console.log(res))
         const color = this.getAttr("color") || "black"
         let embed = new MessageEmbed({
             color: color,
             description: this.getAttr("description") || undefined,
         })
+        try{
+            embed = new MessageEmbed(JSON.parse(this.content))            
+            return {embeds: [embed]}
+        }
+        catch(err){}
         let thumbnail = this.getAttr("thumb") || undefined;
         let image = this.getAttr("img") || undefined;
         embed.setThumbnail(thumbnail)
@@ -92,10 +98,13 @@ embed:
             if(["false", "true", undefined].indexOf(inline) == -1) return {content: "inline must be true or false"}
             embed.addField(name, value, inline == "true" ? true : false)
         }
+        if(opts["j"]){
+            return {content: JSON.stringify(embed.toJSON())}
+        }
         return {
             embeds: [embed]
         }
-    }, "embed [author=\"author\"] [color=\"color\"] [description=\"description\"] [footer=\"footer\"] [img=\"img\"] [thumb=\"thumb\"] title\nfieldname | fieldvalue\n...")
+    }, "embed [-dj] [author=\"author\"] [color=\"color\"] [description=\"description\"] [footer=\"footer\"] [img=\"img\"] [thumb=\"thumb\"] title\nfieldname | fieldvalue\n...\n-d: delete message\n-j: return JSON of embed", "d")
 ,
 
 button: 
@@ -604,6 +613,7 @@ snipe:
     }, "snipe [-d]", "d").setCategory("fun").setMeta({"version": "1.0.0", evil: "yes"})
 }
 
+commands["timeguesser"].registerAlias(["tg"], commands)
 commands["code"].registerAlias(["src"], commands)
 commands["echo"].registerAlias(["e"], commands)
 commands["reverse"].registerAlias(["rev"], commands)
@@ -731,43 +741,53 @@ async function sendFileMessage(msg, sendFn, resp){
     })
 }
 
+async function doCmd(msg: Message | PartialMessage){
+    let cmd = Command.getCommand(msg.content)
+    let resp = runCmd(cmd, msg)
+    if(resp){
+        if(resp.then){
+            //some functions can be async
+            resp = await resp
+        }
+        if(resp){
+            try{
+                if(!resp.reply) await msg.channel.send(resp)
+                else await resp.reply.reply(resp)
+            }
+            catch(err){
+                console.log(err)
+                if(err.httpStatus){
+                    let content = resp?.content || resp?.embed
+                    fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
+                        if(!resp.reply) await msg.channel.send({files: [{
+                                            attachment: `./${msg.author.id}.cmdresp`,
+                                            name: `${msg.author.id}.txt`
+                                        }]})
+                        else await resp.reply.reply({files: [{
+                                attachment: `./${msg.author.id}.cmdresp`,
+                                name: `${msg.author.id}.txt`
+                            }]})
+                        fs.unlinkSync(`./${msg.author.id}.cmdresp`)
+                    })
+                }
+            }
+            fs.unlink(`./${msg.author.id}:${cmd}.cmdresp`, (err) => true)
+        }
+    }
+    else if(resp != false){
+        msg.channel.send(`${cmd} does not exist`)
+    }
+}
+
 client.on("messageCreate", async (msg) => {
     if(msg.content[0] == PREFIX){
-        let cmd = Command.getCommand(msg.content)
-        let resp = runCmd(cmd, msg)
-        if(resp){
-            if(resp.then){
-                //some functions can be async
-                resp = await resp
-            }
-            if(resp){
-                try{
-                    if(!resp.reply) await msg.channel.send(resp)
-                    else await resp.reply.reply(resp)
-                }
-                catch(err){
-                    console.log(err)
-                    if(err.httpStatus){
-                        let content = resp?.content || resp?.embed
-                        fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
-                            if(!resp.reply) await msg.channel.send({files: [{
-                                                attachment: `./${msg.author.id}.cmdresp`,
-                                                name: `${msg.author.id}.txt`
-                                            }]})
-                            else await resp.reply.reply({files: [{
-                                    attachment: `./${msg.author.id}.cmdresp`,
-                                    name: `${msg.author.id}.txt`
-                                }]})
-                            fs.unlinkSync(`./${msg.author.id}.cmdresp`)
-                        })
-                    }
-                }
-                fs.unlink(`./${msg.author.id}:${cmd}.cmdresp`, (err) => true)
-            }
-        }
-        else if(resp != false){
-            msg.channel.send(`${cmd} does not exist`)
-        }
+        await doCmd(msg)
+    }
+})
+
+client.on("messageUpdate", async (oldMsg, msg) => {
+    if(msg.content[0] == PREFIX){
+        await doCmd(msg)
     }
 })
 

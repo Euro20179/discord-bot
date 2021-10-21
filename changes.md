@@ -1,3 +1,13 @@
+# 1.1.1
+
+## Additions
+* [embed -d
+* [embed -j
+* embed now accepts json
+* commands work on edit
+
+---
+
 # 1.1.0.2
 
 ## Fixes
