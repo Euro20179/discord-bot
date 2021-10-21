@@ -1,3 +1,8 @@
+# 1.3.0_B
+
+## Fixes
+* tax
+
 # 1.3.0
 
 ## Additions
