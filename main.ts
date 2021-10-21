@@ -2,10 +2,26 @@ import { Client, Message, PartialMessage, MessageEmbed } from "discord.js"
 
 import {Collection} from "@discordjs/collection"
 
-//@ts-ignore
-const { Intents, MessageActionRow, MessageSelectMenu} = require("discord.js")
+import {UserInfo} from "./src/userinfo"
+//
 //@ts-ignore
 const fs = require("fs")
+
+let users: {[id: string]: UserInfo} = {}
+fs.readdir('./storage', (err, files) => {
+    if(err){ console.log(err); return}
+    files.forEach(file => {
+        if(file.match(/^[0-9]{18}\.json/)){
+            let id = file.split(".")[0]
+            if(users[id]) return
+            let d = fs.readFileSync(`./storage/${file}`).toString()
+            if(d) users[id] = UserInfo.fromJson(JSON.parse(d))
+        }
+    })
+})
+
+//@ts-ignore
+const { Intents, MessageActionRow, MessageSelectMenu} = require("discord.js")
 //@ts-ignore
 const { performance } = require("perf_hooks")
 //@ts-ignore
@@ -31,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.2.2"
+const VERSION = "1.3.0"
 
 let SPAMS = []
 
@@ -580,6 +596,9 @@ time:
 ,
 END:
     new Command(function(msg, opts){
+        for(let user in users){
+            users[user].save(`./storage/${user}.json`)
+        }
         msg.channel.send("Exiting").then(
             res => exit()
         )
@@ -690,9 +709,71 @@ snipe:
             name: `8ball.json`
         }]}
     }).setCategory("util").setMeta({version: "1.2.0"})
-
+,
+money:
+    new Command(function(msg, opts){
+        return {content: String(users[msg.author.id].money)}
+    }).setCategory("economy").setMeta({version: "1.3.0"})
+,
+profile:
+    new Command(function(msg, opts){
+        let user = msg.author.id
+        if(this.content) {
+            let u = userFinder(msg.guild, this.content)
+            user = u.first().id
+        }
+        let data = ""
+        for(let i in users[user]){
+            data += `${i}: ${users[user][i]}\n`
+        }
+        return {content: data.trim()}
+    }).setCategory("economy").setMeta({version: "1.3.0"})
+,
+leaderboard:
+    new Command(function(msg: Message, opts){
+        let moneys = []
+        for(let user in users){
+            moneys.push([user, users[user]["money"]])
+        }
+        moneys = moneys.sort((a, b) => a[1] > b[1] ? -1 : 1)
+        let embed = new MessageEmbed({title: "Leaderboard"})
+        for(let i = 0; i < 10; i++){
+            if(!moneys[i]) break
+            embed.addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
+        }
+        msg.channel.send({embeds: [embed]}).then(res => true).catch(res => true)
+        return false
+    }).setCategory("economy").setMeta({version: "1.3.0"})
+,
+tax:
+    new Command(function(msg, opts){
+        if(users[msg.author.id].timeSinceTax() > 0){
+            return {content: `You have already taxed someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceTax()) * 60}minutes`}
+        }
+        users[msg.author.id].lastTaxed = Date.now()
+        let u = userFinder(msg.guild, this.content)
+        let taxAmount
+        let user
+        for(user of u){
+            if(!users[user[1].id]){
+                return {content: `${user[1].user.username} does not have a profile`}
+            }
+            taxAmount = users[user[1].id].tax()
+            if(taxAmount == 0){
+                return {content: `${user[1].user.username} has been taxed today`}
+            }
+            users[msg.author.id].money += taxAmount
+            break
+        }
+        for(let ui in users){
+            if(ui == user[1].id)
+            users[ui].taxRate += 0.01
+        }
+        return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
+    })
 }
 
+commands["leaderboard"].registerAlias(["lb", "top"], commands)
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)
 commands["8ball"].registerAlias(["8", "8b"], commands)
 commands["add8ball"].registerAlias(["add8", "add8b", "a8", "a8b", "8bradd", "8br"], commands)
@@ -814,17 +895,6 @@ function runCmd(cmd, msg){
     return commands[cmd]?.run(msg)
 }
 
-async function sendFileMessage(msg, sendFn, resp){
-    let content = resp?.content || resp?.embed
-    fs.writeFile(`./${msg.author.id}.cmdresp`, content, async () => {
-        await sendFn({files: [{
-            attachment: `./${msg.author.id}.cmdresp`,
-            name: `${msg.author.id}.txt`
-        }]})
-        fs.unlinkSync(`./${msg.author.id}.cmdresp`)
-    })
-}
-
 async function doCmd(msg: Message | PartialMessage){
     let cmd = Command.getCommand(msg.content)
     let resp = runCmd(cmd, msg)
@@ -864,9 +934,14 @@ async function doCmd(msg: Message | PartialMessage){
 }
 
 client.on("messageCreate", async (msg) => {
+    if(!users[msg.author.id]){
+        users[msg.author.id] = new UserInfo({id: msg.author.id, money: 0})
+    }
+    users[msg.author.id]?.talk()
     if(msg.content[0] == PREFIX){
         await doCmd(msg)
     }
+    users[msg.author.id]?.save(`./storage/${msg.author.id}.json`)
 })
 
 client.on("messageUpdate", async (oldMsg, msg) => {
