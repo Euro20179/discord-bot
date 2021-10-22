@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.3.2"
+const VERSION = "1.3.3"
 
 let SPAMS = []
 
@@ -768,6 +768,7 @@ tax:
         for(let ui in users){
             if(ui == user[1].id) continue
             users[ui].taxRate += 0.01
+            users[ui].save(`./storage/${ui}.json`)
         }
         return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
     }).setCategory("economy").setMeta({version: "1.3.0"})
