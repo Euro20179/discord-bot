@@ -1,3 +1,11 @@
+
+# 1.3.3
+
+## Technical
+* save user data after a user is taxed
+
+---
+
 # 1.3.2
 
 ## Changes
