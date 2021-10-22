@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.3.1"
+const VERSION = "1.3.2"
 
 let SPAMS = []
 
@@ -771,6 +771,14 @@ tax:
         }
         return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
     }).setCategory("economy").setMeta({version: "1.3.0"})
+,
+SETTAXRATE:
+    new Command(function(msg, opts){
+        for(let u in users){
+            users[u].taxRate = Number(this.content)
+        }
+        return {content: `tax rate for all users is ${this.content}`}
+    }).addToWhitelist(["334538784043696130"]).setMeta({version: "1.3.2"}).setCategory("admin")
 }
 
 commands["leaderboard"].registerAlias(["lb", "top"], commands)
