@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.3.3"
+const VERSION = "1.3.4"
 
 let SPAMS = []
 
@@ -765,6 +765,7 @@ tax:
             users[msg.author.id].money += taxAmount
             break
         }
+        if(!user) return {content: `invalid user: ${this.content}`}
         for(let ui in users){
             if(ui == user[1].id) continue
             users[ui].taxRate += 0.01
