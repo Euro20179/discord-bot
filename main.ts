@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.3.5"
+const VERSION = "1.3.6"
 
 let SPAMS = []
 
@@ -747,7 +747,8 @@ leaderboard:
 ,
 tax:
     new Command(function(msg, opts){
-        if(users[msg.author.id].timeSinceTax() > 0){
+        console.log(users[msg.author.id].timeSinceTax())
+        if(users[msg.author.id].timeSinceTax() < 1){
             return {content: `You have already taxed someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceTax()) * 60}minutes`}
         }
         let u = userFinder(msg.guild, this.content)

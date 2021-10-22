@@ -44,7 +44,7 @@ export class UserInfo{
         }
     }
     timeSinceTax(){
-        return this.lastTaxed ? (Date.now() - this.lastTaxed) / (60 * 60 * 1000) : 0
+        return (Date.now() - this.lastTaxed) / (60 * 60 * 1000)
     }
     tax(){
         let newMoney = this.money * (1-this.taxRate)
