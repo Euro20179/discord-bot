@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.3.4"
+const VERSION = "1.3.5"
 
 let SPAMS = []
 
@@ -750,7 +750,6 @@ tax:
         if(users[msg.author.id].timeSinceTax() > 0){
             return {content: `You have already taxed someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceTax()) * 60}minutes`}
         }
-        users[msg.author.id].lastTaxed = Date.now()
         let u = userFinder(msg.guild, this.content)
         let taxAmount
         let user
@@ -766,6 +765,7 @@ tax:
             break
         }
         if(!user) return {content: `invalid user: ${this.content}`}
+        users[msg.author.id].lastTaxed = Date.now()
         for(let ui in users){
             if(ui == user[1].id) continue
             users[ui].taxRate += 0.01
