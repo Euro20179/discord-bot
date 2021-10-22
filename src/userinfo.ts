@@ -25,7 +25,7 @@ export class UserInfo{
         this.id = id
         this.lastTalked = 0
         this.lastTaxed = 0
-        this.taxRate = 1.01
+        this.taxRate = .01
     }
     static fromJson({id, money, lastTalked, lastTaxed}) {
         let u = new UserInfo({id: id, money: money}) 
@@ -47,8 +47,8 @@ export class UserInfo{
         return this.lastTaxed ? (Date.now() - this.lastTaxed) / (60 * 60 * 1000) : 0
     }
     tax(){
-        let newMoney = this.money / this.taxRate
-        this.taxRate = 1.01
+        let newMoney = this.money * (1-this.taxRate)
+        this.taxRate = .01
         let rv = this.money - newMoney
         this.money = newMoney
         return rv
