@@ -1,5 +1,8 @@
 # 1.3.9
 
+## Additions
+* [prefix
+
 ## Fixes
 * mentions and user ids not working for finding a user
 

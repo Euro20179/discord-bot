@@ -11,8 +11,6 @@ type Category = "fun" | "meta" | "util" | "admin"
 type UserIdString = string
 
 function parseOpts(text, optString): [Opts, string]{
-    text = Command.stripPrefix(text)
-    
     let optsString = ''
     let opts = {}
     for(let opt of optString){
@@ -64,11 +62,11 @@ export class Command{
         this.PREFIX = PREFIX
     }
     static stripPrefix(text){
-        return text.slice(1)
+        return text.slice(this.PREFIX.length)
     }
     static getText(text){
         let index = text.indexOf(" ")
-        return index == -1 ? "" : text.slice(index)
+        return index == -1 ? "" : text.slice(index + 1)
     }
     static getCommand(text){
         return Command.stripPrefix(text.slice(0, text.indexOf(" ") == -1 ? undefined : text.indexOf(" ")))

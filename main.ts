@@ -45,9 +45,9 @@ const token = fs.readFileSync("token", "utf-8").trim()
 
 const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
-const PREFIX = "]"
+let PREFIX = "]"
 
-const VERSION = "1.3.8"
+const VERSION = "1.3.9"
 
 let SPAMS = []
 
@@ -778,6 +778,13 @@ tax:
         return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
     }).setCategory("economy").setMeta({version: "1.3.0"})
 ,
+prefix:
+    new Command(function(msg, opts){
+        PREFIX = this.content
+        Command.setPrefix(PREFIX)
+        return {content: `The new prefix is: ${PREFIX}`}
+    }).setCategory("admin").setMeta({version: "1.3.9"})
+,
 SETTAXRATE:
     new Command(function(msg, opts){
         for(let u in users){
@@ -952,14 +959,14 @@ client.on("messageCreate", async (msg) => {
         users[msg.author.id] = new UserInfo({id: msg.author.id, money: 0})
     }
     users[msg.author.id]?.talk()
-    if(msg.content[0] == PREFIX){
+    if(msg.content.slice(0, PREFIX.length) == PREFIX){
         await doCmd(msg)
     }
     users[msg.author.id]?.save(`./storage/${msg.author.id}.json`)
 })
 
 client.on("messageUpdate", async (oldMsg, msg) => {
-    if(msg.content[0] == PREFIX){
+    if(msg.content.slice(0, PREFIX.length) == PREFIX){
         await doCmd(msg)
     }
 })
