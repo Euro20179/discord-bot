@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.3.9_B"
+const VERSION = "1.3.9_C"
 
 let SPAMS = []
 
@@ -783,8 +783,13 @@ leaderboard:
                     console.log(i.customId)
                     //@ts-ignore
                     page = Number(i.customId)
-                    //@ts-ignore
-                    await i.update({embeds: [embeds[Number(i.customId)]], components: rows})
+                    try{
+                        //@ts-ignore
+                        await i.update({embeds: [embeds[Number(i.customId)]], components: rows})
+                    }
+                    catch(err){
+                        console.log(err)
+                    }
                 })
             }
         ).catch(res => console.log(res))
