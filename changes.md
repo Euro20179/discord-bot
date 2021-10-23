@@ -1,3 +1,10 @@
+# 1.3.10
+
+## Changes
+* donateing reduces your tax rate by half the percent you donated instead of a flat 1%
+
+---
+
 # 1.3.9
 
 ## Additions

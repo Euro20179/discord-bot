@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.3.9_C"
+const VERSION = "1.3.10"
 
 let SPAMS = []
 
@@ -833,7 +833,7 @@ donate:
         }
         let amount = this.content.split(" ")[0]
         let searchUser = this.content.split(" ").slice(1).join(" ")
-        amount = Number(amount)
+        amount = Number(amount / 100)
         if(amount < .1){
             return {content: "The minimum you can donate is .1%"}
         }
@@ -843,8 +843,8 @@ donate:
             if(!users[user[1].id]){
                 users[user[1].id] = new UserInfo({id: user[1].id, money: 100})
             }
-            users[msg.author.id].taxRate -= 0.01
-            let donation = users[msg.author.id].money * (amount / 100)
+            users[msg.author.id].taxRate -= amount / 2
+            let donation = users[msg.author.id].money * amount 
             users[user[1].id].money += donation
             users[msg.author.id].money -= donation
             users[msg.author.id].lastDonated = Date.now()
@@ -853,7 +853,7 @@ donate:
             return {content: `donated ${donation} to ${user[1].user.username}`}
         }
         if(!user) return {content: `Invalid user: ${searchUser}`}
-    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by 1%")
+    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by half the amount you donated")
 ,
 prefix:
     new Command(function(msg, opts){
