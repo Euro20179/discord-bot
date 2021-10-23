@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "["
 
-const VERSION = "1.3.10.2"
+const VERSION = "1.3.11"
 
 let SPAMS = []
 
@@ -889,6 +889,15 @@ commands["cmdmeta"].registerAlias(["meta"], commands)
 
 client.on("ready", () => {
     console.log("hello")
+    //if not in dev mode
+    if(PREFIX == "]"){
+        let gid = fs.readFileSync("guild").toString().trim()
+        let guild = client.guilds.cache.find((val) => val.id == gid)
+        for(let member of ["334538784043696130"]){
+            let u = guild.members.cache.find((val) => val.id == member)
+            u.send({content: `BOT V: ${VERSION} ONLINE`})
+        }
+    }
 })
 
 function* parseCommand(text){

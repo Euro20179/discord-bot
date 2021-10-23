@@ -1,3 +1,10 @@
+# 1.3.11
+
+## Additions
+* dm users who want to be dmd when online
+
+---
+
 # 1.3.10.2
 
 ## Fixes
