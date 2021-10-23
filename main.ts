@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "["
 
-const VERSION = "1.3.11"
+const VERSION = "1.3.11.1"
 
 let SPAMS = []
 
@@ -835,7 +835,7 @@ donate:
         if(isNaN(Number(amount))) return {content: `${amount} is not a number`}
         let searchUser = this.content.split(" ").slice(1).join(" ")
         amount = Number(amount / 100)
-        if(amount < .1){
+        if(amount * 100 < .1){
             return {content: "The minimum you can donate is .1%"}
         }
         let u = userFinder(msg.guild, searchUser)
@@ -858,6 +858,7 @@ donate:
 ,
 prefix:
     new Command(function(msg, opts){
+        if(!this.content){return {content: "PREFIX MUST BE SET TO SOMETHING"}}
         PREFIX = this.content
         Command.setPrefix(PREFIX)
         return {content: `The new prefix is: ${PREFIX}`}
@@ -867,6 +868,7 @@ SETTAXRATE:
     new Command(function(msg, opts){
         for(let u in users){
             users[u].taxRate = Number(this.content)
+            users[u].save(`./storage/${u}.json`)
         }
         return {content: `tax rate for all users is ${this.content}`}
     }).addToWhitelist(["334538784043696130"]).setMeta({version: "1.3.2"}).setCategory("admin")
