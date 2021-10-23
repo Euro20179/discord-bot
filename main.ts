@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "["
 
-const VERSION = "1.3.10.1"
+const VERSION = "1.3.10.2"
 
 let SPAMS = []
 
@@ -832,6 +832,7 @@ donate:
             return {content: `You have already donated to someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceDonate()) * 60}minutes`}
         }
         let amount = this.content.split(" ")[0]
+        if(isNaN(Number(amount))) return {content: `${amount} is not a number`}
         let searchUser = this.content.split(" ").slice(1).join(" ")
         amount = Number(amount / 100)
         if(amount < .1){
@@ -853,7 +854,7 @@ donate:
             return {content: `donated ${donation} to ${user[1].user.username}`}
         }
         if(!user) return {content: `Invalid user: ${searchUser}`}
-    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by half the amount you donated")
+    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by the amount you donated + .7%")
 ,
 prefix:
     new Command(function(msg, opts){

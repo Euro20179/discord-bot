@@ -1,3 +1,8 @@
+# 1.3.10.2
+
+## Fixes
+* warning when donating NaN
+
 # 1.3.10.1
 
 ## Changes
