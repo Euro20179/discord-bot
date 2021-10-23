@@ -7,6 +7,7 @@ export class UserInfo{
     id: string
     lastTalked: number
     lastTaxed: number
+    lastDonated: number
     taxRate: number
     get json(){
         return {
@@ -14,6 +15,7 @@ export class UserInfo{
             id: this.id, 
             lastTalked: this.lastTalked,
             lastTaxed: this.lastTaxed,
+            lastDonated: this.lastDonated,
             taxRate: this.taxRate
         }
     }
@@ -25,12 +27,14 @@ export class UserInfo{
         this.id = id
         this.lastTalked = 0
         this.lastTaxed = 0
+        this.lastDonated = 0
         this.taxRate = .01
     }
-    static fromJson({id, money, lastTalked, lastTaxed, taxRate}) {
+    static fromJson({id, money, lastTalked, lastTaxed, taxRate, lastDonated}) {
         let u = new UserInfo({id: id, money: money}) 
         u.lastTalked = lastTalked || 0
         u.lastTaxed = lastTaxed || 0
+        u.lastDonated = lastDonated || 0
         u.taxRate = taxRate || 0.01
         return u
     }
@@ -46,6 +50,9 @@ export class UserInfo{
     }
     timeSinceTax(){
         return (Date.now() - this.lastTaxed) / (60 * 60 * 1000)
+    }
+    timeSinceDonate(){
+        return (Date.now() - this.lastDonated) / (60 * 60 * 1000)
     }
     tax(){
         let newMoney = this.money * (1-this.taxRate)

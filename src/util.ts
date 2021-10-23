@@ -57,7 +57,7 @@ function expandContent(text, msg, customExpansions, basic){
 export function userFinder(guild: Guild, text: string): Collection<string, GuildMember>{
     text = text.toLowerCase()
     let members = guild.members.cache.filter((val, idx, arr) => {
-        return val.id == text || val.nickname?.toLowerCase().match(text) || val.user.username.toLowerCase().match(text) || userMention(val.id) == text || val.displayName?.toLowerCase() == text ? true : false
+        return val.id == text.trim() || val.nickname?.toLowerCase().match(text) || val.user.username.toLowerCase().match(text) || userMention(val.id) == text.trim() || val.displayName?.toLowerCase() == text ? true : false
     })
     return members
 }

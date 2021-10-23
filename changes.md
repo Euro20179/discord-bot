@@ -1,3 +1,16 @@
+# 1.3.9
+
+## Additions
+* [prefix
+* [donate
+* [leaderboard can now go past top 10
+* [money now accepts a user as argument
+
+## Fixes
+* mentions and user ids not working for finding a user
+
+---
+
 # 1.3.8
 
 ## Fixes

@@ -1,4 +1,4 @@
-import { Client, Message, PartialMessage, MessageEmbed } from "discord.js"
+import { Client, Message, PartialMessage, MessageEmbed, GuildMember } from "discord.js"
 
 import {Collection} from "@discordjs/collection"
 
@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "["
 
-const VERSION = "1.3.8"
+const VERSION = "1.3.9"
 
 let SPAMS = []
 
@@ -714,8 +714,17 @@ snipe:
 ,
 money:
     new Command(function(msg, opts){
-        return {content: String(users[msg.author.id].money)}
-    }).setCategory("economy").setMeta({version: "1.3.0"})
+        let user = msg.author.id
+        if(this.content.trim()){
+            let u = userFinder(msg.guild, this.content)
+            for(user of u){
+                if(!user[0]) break
+                user = user[0]
+                break
+            }
+        }
+        return {content: `user:\n${(users[user]?.money)}`}
+    }, "money user").setCategory("economy").setMeta({version: "1.3.0"})
 ,
 profile:
     new Command(function(msg, opts){
@@ -735,16 +744,48 @@ profile:
 leaderboard:
     new Command(function(msg: Message, opts){
         let moneys = []
+        let max = Number(this.content) || 10
         for(let user in users){
             moneys.push([user, users[user]["money"]])
         }
         moneys = moneys.sort((a, b) => a[1] > b[1] ? -1 : 1)
-        let embed = new MessageEmbed({title: "Leaderboard"})
-        for(let i = 0; i < 10; i++){
+        let embeds = [new MessageEmbed({title: "Leaderboard 1"})]
+        let embed = 0
+        for(let i = 0; i < max; i++){
             if(!moneys[i]) break
-            embed.addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
+            if(i % 12 == 0 && i != 0){
+                embed++
+                embeds.push(new MessageEmbed({title: `Leaderboard ${embed + 1}`}))
+            }
+            embeds[embed].addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
         }
-        msg.channel.send({embeds: [embed]}).then(res => true).catch(res => true)
+        let row = new MessageActionRow()
+        let rows = []
+        let rowN = 0
+        let i
+        for(i = 0; i < embeds.length; i++){
+            if(i % 4 == 0 && i != 0){
+                rowN++
+                rows.push(row)
+                row = new MessageActionRow()
+            }
+            row.addComponents(createButton(`${i}`, `${i + 1}`, `PRIMARY`))
+        }
+        if(i > 0 && row.components.length > 0) rows.push(row)
+        let page = 0
+        msg.channel.send({embeds: [embeds[0]], components: rows}).then(
+            res => {
+                const collector = msg.channel.createMessageComponentCollector({filter: i => i.user.id == msg.author.id, time: 300 * 1000})
+                collector.on("collect", async i => {
+                    //@ts-ignore
+                    if(page == Number(i.customId)) return
+                    //@ts-ignore
+                    page = Number(i.customId)
+                    //@ts-ignore
+                    await i.update({embeds: [embeds[Number(i.customId)]], components: rows})
+                })
+            }
+        ).catch(res => console.log(res))
         return false
     }).setCategory("economy").setMeta({version: "1.3.0"})
 ,
@@ -776,7 +817,43 @@ tax:
             users[ui].save(`./storage/${ui}.json`)
         }
         return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
-    }).setCategory("economy").setMeta({version: "1.3.0"})
+    }, "tax user\nWhen you tax someone, the taxrate of all other users (except you) increases by 1%").setCategory("economy").setMeta({version: "1.3.0"})
+,
+donate:
+    new Command(function(msg, opts){
+        if(users[msg.author.id].timeSinceDonate() < 1){
+            return {content: `You have already donated to someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceDonate()) * 60}minutes`}
+        }
+        let amount = this.content.split(" ")[0]
+        let searchUser = this.content.split(" ").slice(1).join(" ")
+        amount = Number(amount)
+        if(amount < .1){
+            return {content: "The minimum you can donate is .1%"}
+        }
+        let u = userFinder(msg.guild, searchUser)
+        let user: [string, GuildMember] ;
+        for(user of u){
+            if(!users[user[1].id]){
+                users[user[1].id] = new UserInfo({id: user[1].id, money: 100})
+            }
+            users[msg.author.id].taxRate -= 0.01
+            let donation = users[msg.author.id].money * (amount / 100)
+            users[user[1].id].money += donation
+            users[msg.author.id].money -= donation
+            users[msg.author.id].lastDonated = Date.now()
+            users[user[1].id].save(`./storage/${user[1].id}.json`)
+            users[msg.author.id].save(`./storage/${msg.author.id}.json`)
+            return {content: `donated ${donation} to ${user[1].user.username}`}
+        }
+        if(!user) return {content: `Invalid user: ${searchUser}`}
+    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by 1%")
+,
+prefix:
+    new Command(function(msg, opts){
+        PREFIX = this.content
+        Command.setPrefix(PREFIX)
+        return {content: `The new prefix is: ${PREFIX}`}
+    }).setCategory("admin").setMeta({version: "1.3.9"})
 ,
 SETTAXRATE:
     new Command(function(msg, opts){
@@ -952,14 +1029,14 @@ client.on("messageCreate", async (msg) => {
         users[msg.author.id] = new UserInfo({id: msg.author.id, money: 0})
     }
     users[msg.author.id]?.talk()
-    if(msg.content[0] == PREFIX){
+    if(msg.content.slice(0, PREFIX.length) == PREFIX){
         await doCmd(msg)
     }
     users[msg.author.id]?.save(`./storage/${msg.author.id}.json`)
 })
 
 client.on("messageUpdate", async (oldMsg, msg) => {
-    if(msg.content[0] == PREFIX){
+    if(msg.content.slice(0, PREFIX.length) == PREFIX){
         await doCmd(msg)
     }
 })
