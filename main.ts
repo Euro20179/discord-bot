@@ -1,4 +1,4 @@
-import { Client, Message, PartialMessage, MessageEmbed } from "discord.js"
+import { Client, Message, PartialMessage, MessageEmbed, GuildMember } from "discord.js"
 
 import {Collection} from "@discordjs/collection"
 
@@ -776,7 +776,36 @@ tax:
             users[ui].save(`./storage/${ui}.json`)
         }
         return {content: `you have taxed ${user[1].user.username} for ${taxAmount}`}
-    }).setCategory("economy").setMeta({version: "1.3.0"})
+    }, "tax user\nWhen you tax someone, the taxrate of all other users (except you) increases by 1%").setCategory("economy").setMeta({version: "1.3.0"})
+,
+donate:
+    new Command(function(msg, opts){
+        if(users[msg.author.id].timeSinceDonate() < 1){
+            return {content: `You have already donated to someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceDonate()) * 60}minutes`}
+        }
+        let amount = this.content.split(" ")[0]
+        let searchUser = this.content.split(" ").slice(1).join(" ")
+        amount = Number(amount)
+        if(amount < .1){
+            return {content: "The minimum you can donate is .1%"}
+        }
+        let u = userFinder(msg.guild, searchUser)
+        let user: [string, GuildMember] ;
+        for(user of u){
+            if(!users[user[1].id]){
+                users[user[1].id] = new UserInfo({id: user[1].id, money: 100})
+            }
+            users[msg.author.id].taxRate -= 0.01
+            let donation = users[msg.author.id].money * (amount / 100)
+            users[user[1].id].money += donation
+            users[msg.author.id].money -= donation
+            users[msg.author.id].lastDonated = Date.now()
+            users[user[1].id].save(`./storage/${user[1].id}.json`)
+            users[msg.author.id].save(`./storage/${msg.author.id}.json`)
+            return {content: `donated ${donation} to ${user[1].user.username}`}
+        }
+        if(!user) return {content: `Invalid user: ${searchUser}`}
+    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by 1%")
 ,
 prefix:
     new Command(function(msg, opts){

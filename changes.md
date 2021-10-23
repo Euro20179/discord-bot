@@ -2,6 +2,7 @@
 
 ## Additions
 * [prefix
+* [donate
 
 ## Fixes
 * mentions and user ids not working for finding a user
