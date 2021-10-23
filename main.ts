@@ -868,6 +868,7 @@ SETTAXRATE:
     new Command(function(msg, opts){
         for(let u in users){
             users[u].taxRate = Number(this.content)
+            users[u].save(`./storage/${u}.json`)
         }
         return {content: `tax rate for all users is ${this.content}`}
     }).addToWhitelist(["334538784043696130"]).setMeta({version: "1.3.2"}).setCategory("admin")
