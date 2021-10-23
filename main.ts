@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.3.10.1"
+const VERSION = "1.3.10.2"
 
 let SPAMS = []
 
@@ -832,6 +832,7 @@ donate:
             return {content: `You have already donated to someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceDonate()) * 60}minutes`}
         }
         let amount = this.content.split(" ")[0]
+        if(isNaN(Number(amount))) return {content: `${amount} is not a number`}
         let searchUser = this.content.split(" ").slice(1).join(" ")
         amount = Number(amount / 100)
         if(amount < .1){
