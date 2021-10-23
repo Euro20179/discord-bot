@@ -27,10 +27,11 @@ export class UserInfo{
         this.lastTaxed = 0
         this.taxRate = .01
     }
-    static fromJson({id, money, lastTalked, lastTaxed}) {
+    static fromJson({id, money, lastTalked, lastTaxed, taxRate}) {
         let u = new UserInfo({id: id, money: money}) 
         u.lastTalked = lastTalked || 0
         u.lastTaxed = lastTaxed || 0
+        u.taxRate = taxRate || 0.01
         return u
     }
     save(path){

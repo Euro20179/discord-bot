@@ -1,3 +1,10 @@
+# 1.3.8
+
+## Fixes
+* taxRate is saved
+
+---
+
 # 1.3.7
 
 ## Additions
