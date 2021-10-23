@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.3.11.1"
+const VERSION = "1.3.11.2"
 
 let SPAMS = []
 
@@ -841,6 +841,7 @@ donate:
         let u = userFinder(msg.guild, searchUser)
         let user: [string, GuildMember] ;
         for(user of u){
+            if(user[1].user.bot) return {content: "bots cannot donate"}
             if(!users[user[1].id]){
                 users[user[1].id] = new UserInfo({id: user[1].id, money: 100})
             }
@@ -872,6 +873,19 @@ SETTAXRATE:
         }
         return {content: `tax rate for all users is ${this.content}`}
     }).addToWhitelist(["334538784043696130"]).setMeta({version: "1.3.2"}).setCategory("admin")
+,
+SETMONEY:
+    new Command(function(msg, opts){
+        let amount = this.content.split(" ")[0]
+        let userSearch = this.content.split(" ").slice(1).join(" ")
+        let u = userFinder(msg.guild, userSearch)
+        let user
+        for(user of u){
+            if(!users[user[0]])return {content: `${user[0]} not found`}
+            users[user[0]].money = Number(amount)
+            return {content: `${userMention(user[1].id)} is at ${amount}`}
+        }
+    }).addToWhitelist(["334538784043696130"])
 }
 
 commands["leaderboard"].registerAlias(["lb", "top"], commands)
