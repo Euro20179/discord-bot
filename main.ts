@@ -735,16 +735,48 @@ profile:
 leaderboard:
     new Command(function(msg: Message, opts){
         let moneys = []
+        let max = Number(this.content) || 10
         for(let user in users){
             moneys.push([user, users[user]["money"]])
         }
         moneys = moneys.sort((a, b) => a[1] > b[1] ? -1 : 1)
-        let embed = new MessageEmbed({title: "Leaderboard"})
-        for(let i = 0; i < 10; i++){
+        let embeds = [new MessageEmbed({title: "Leaderboard 1"})]
+        let embed = 0
+        for(let i = 0; i < max; i++){
             if(!moneys[i]) break
-            embed.addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
+            if(i % 12 == 0 && i != 0){
+                embed++
+                embeds.push(new MessageEmbed({title: `Leaderboard ${embed + 1}`}))
+            }
+            embeds[embed].addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
         }
-        msg.channel.send({embeds: [embed]}).then(res => true).catch(res => true)
+        let row = new MessageActionRow()
+        let rows = []
+        let rowN = 0
+        let i
+        for(i = 0; i < embeds.length; i++){
+            if(i % 4 == 0 && i != 0){
+                rowN++
+                rows.push(row)
+                row = new MessageActionRow()
+            }
+            row.addComponents(createButton(`${i}`, `${i + 1}`, `PRIMARY`))
+        }
+        if(i > 0 && row.components.length > 0) rows.push(row)
+        let page = 0
+        msg.channel.send({embeds: [embeds[0]], components: rows}).then(
+            res => {
+                const collector = msg.channel.createMessageComponentCollector({filter: i => i.user.id == msg.author.id, time: 300 * 1000})
+                collector.on("collect", async i => {
+                    //@ts-ignore
+                    if(page == Number(i.customId)) return
+                    //@ts-ignore
+                    page = Number(i.customId)
+                    //@ts-ignore
+                    await i.update({embeds: [embeds[Number(i.customId)]], components: rows})
+                })
+            }
+        ).catch(res => console.log(res))
         return false
     }).setCategory("economy").setMeta({version: "1.3.0"})
 ,
