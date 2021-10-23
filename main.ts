@@ -714,8 +714,17 @@ snipe:
 ,
 money:
     new Command(function(msg, opts){
-        return {content: String(users[msg.author.id].money)}
-    }).setCategory("economy").setMeta({version: "1.3.0"})
+        let user = msg.author.id
+        if(this.content.trim()){
+            let u = userFinder(msg.guild, this.content)
+            for(user of u){
+                if(!user[0]) break
+                user = user[0]
+                break
+            }
+        }
+        return {content: `user:\n${(users[user]?.money)}`}
+    }, "money user").setCategory("economy").setMeta({version: "1.3.0"})
 ,
 profile:
     new Command(function(msg, opts){

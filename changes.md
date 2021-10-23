@@ -4,6 +4,7 @@
 * [prefix
 * [donate
 * [leaderboard can now go past top 10
+* [money now accepts a user as argument
 
 ## Fixes
 * mentions and user ids not working for finding a user
