@@ -45,7 +45,7 @@ const token = fs.readFileSync("token", "utf-8").trim()
 
 const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
-const PREFIX = "["
+let PREFIX = "["
 
 const VERSION = "1.3.9"
 
