@@ -1,3 +1,10 @@
+# 1.3.10.1
+
+## Changes
+* donating decreases taxrate by amount donated + .7%
+
+---
+
 # 1.3.10
 
 ## Changes

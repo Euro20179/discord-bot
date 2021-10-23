@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.3.10"
+const VERSION = "1.3.10.1"
 
 let SPAMS = []
 
@@ -843,7 +843,7 @@ donate:
             if(!users[user[1].id]){
                 users[user[1].id] = new UserInfo({id: user[1].id, money: 100})
             }
-            users[msg.author.id].taxRate -= amount / 2
+            users[msg.author.id].taxRate -= amount + .007
             let donation = users[msg.author.id].money * amount 
             users[user[1].id].money += donation
             users[msg.author.id].money -= donation
