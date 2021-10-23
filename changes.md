@@ -2,6 +2,7 @@
 
 ## Fixes
 * prefix cant be set to nothing
+* donate
 
 ---
 

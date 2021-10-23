@@ -835,7 +835,7 @@ donate:
         if(isNaN(Number(amount))) return {content: `${amount} is not a number`}
         let searchUser = this.content.split(" ").slice(1).join(" ")
         amount = Number(amount / 100)
-        if(amount < .1){
+        if(amount * 100 < .1){
             return {content: "The minimum you can donate is .1%"}
         }
         let u = userFinder(msg.guild, searchUser)
