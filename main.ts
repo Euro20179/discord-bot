@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "["
 
-const VERSION = "1.3.9"
+const VERSION = "1.3.9_B"
 
 let SPAMS = []
 
@@ -757,7 +757,7 @@ leaderboard:
                 embed++
                 embeds.push(new MessageEmbed({title: `Leaderboard ${embed + 1}`}))
             }
-            embeds[embed].addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0]).user.username || "unknown"}`, String(moneys[i][1]), true)
+            embeds[embed].addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0])?.user?.username || "unknown"}`, String(moneys[i][1]), true)
         }
         let row = new MessageActionRow()
         let rows = []
@@ -779,6 +779,8 @@ leaderboard:
                 collector.on("collect", async i => {
                     //@ts-ignore
                     if(page == Number(i.customId)) return
+                        //@ts-ignore
+                    console.log(i.customId)
                     //@ts-ignore
                     page = Number(i.customId)
                     //@ts-ignore
