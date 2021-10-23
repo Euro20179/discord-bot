@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.3.11"
+const VERSION = "1.3.11.1"
 
 let SPAMS = []
 
@@ -858,6 +858,7 @@ donate:
 ,
 prefix:
     new Command(function(msg, opts){
+        if(!this.content){return {content: "PREFIX MUST BE SET TO SOMETHING"}}
         PREFIX = this.content
         Command.setPrefix(PREFIX)
         return {content: `The new prefix is: ${PREFIX}`}
