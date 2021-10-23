@@ -1,3 +1,10 @@
+# 1.3.9
+
+## Fixes
+* mentions and user ids not working for finding a user
+
+---
+
 # 1.3.8
 
 ## Fixes
