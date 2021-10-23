@@ -1,3 +1,14 @@
+# 1.3.7
+
+## Additions
+* [snipe is different for each channel
+
+## Fixes
+
+* [profile doesn't break when given invalid user
+
+---
+
 # 1.3.6
 
 ## Fixes

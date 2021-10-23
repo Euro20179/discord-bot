@@ -47,11 +47,11 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 const PREFIX = "]"
 
-const VERSION = "1.3.6"
+const VERSION = "1.3.7"
 
 let SPAMS = []
 
-let LAST_DELETED_MESSAGE: Message | PartialMessage
+let LAST_DELETED_MESSAGE = {}
 
 let userVars = {global: {}}
 
@@ -670,7 +670,9 @@ code:
 snipe:
     new Command(function(msg, opts){
         if(opts["d"]){msg.delete().then(res => false).catch(res => false)}
-        return {content: `${Command.escape(LAST_DELETED_MESSAGE.content)}\n-${userMention(LAST_DELETED_MESSAGE.author.id)}`}
+        let m = LAST_DELETED_MESSAGE[msg.channel.id]
+        if(!m) return {content: "no message deleted in this channel"}
+        return {content: `${Command.escape(m.content)}\n-${userMention(m.author.id)}`}
     }, "snipe [-d]", "d").setCategory("fun").setMeta({"version": "1.0.0", evil: "yes"})
 ,
 "add8ball":
@@ -720,8 +722,9 @@ profile:
         let user = msg.author.id
         if(this.content) {
             let u = userFinder(msg.guild, this.content)
-            user = u.first().id
+            user = u.first()?.id
         }
+        if(!user) return {content: `${this.content} not found`}
         let data = ""
         for(let i in users[user]){
             data += `${i}: ${users[user][i]}\n`
@@ -963,7 +966,7 @@ client.on("messageUpdate", async (oldMsg, msg) => {
 
 client.on("messageDelete", async(msg) => {
     if([429650019726000129, 535251826128453662].indexOf(Number(msg.channel.id)) < 0){
-        LAST_DELETED_MESSAGE = msg
+        LAST_DELETED_MESSAGE[msg.channel.id] = msg
     }
 })
 client.login(token)
