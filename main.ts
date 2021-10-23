@@ -854,7 +854,7 @@ donate:
             return {content: `donated ${donation} to ${user[1].user.username}`}
         }
         if(!user) return {content: `Invalid user: ${searchUser}`}
-    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by half the amount you donated")
+    }, "donate amount user\namount is in **percent** eg: [amount 1 <@898781634797654046>\nwould donate 1% of your money to <@898781634797654046>\nDonating reduces your tax rate by the amount you donated + .7%")
 ,
 prefix:
     new Command(function(msg, opts){
