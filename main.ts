@@ -47,7 +47,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.3.11.2"
+const VERSION = "1.4.0"
 
 let SPAMS = []
 
@@ -174,7 +174,7 @@ button:
                             }
                         })
                     }
-                )
+                ).catch(res => console.log(res))
             }
         ).catch(res => false)
         return false
@@ -317,7 +317,7 @@ progressbar:
 spam:
     new Command(async function(msg: Message, opts){
         SPAM_STOP = false
-        if(opts["d"]) await msg.delete()
+        if(opts["d"]) await msg.delete().then().catch(res => console.log(res))
         let _delay = this.getAttr('delay') || 1
 	let delay
         if(typeof _delay != "number" && _delay.indexOf(",") != -1){
@@ -1063,7 +1063,10 @@ client.on("messageCreate", async (msg) => {
     }
     users[msg.author.id]?.talk()
     if(msg.content.slice(0, PREFIX.length) == PREFIX){
-        await doCmd(msg)
+        for(let sLine of msg.content.split("\n;")){
+            msg.content = sLine.trim()
+            await doCmd(msg)
+        }
     }
     users[msg.author.id]?.save(`./storage/${msg.author.id}.json`)
 })

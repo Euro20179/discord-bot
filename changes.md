@@ -1,3 +1,14 @@
+# 1.4.0
+
+## Additions
+* do multiple commands like this:
+```
+[cmd1
+;
+[cmd2
+
+---
+
 # 1.3.11.1
 
 ## Fixes
