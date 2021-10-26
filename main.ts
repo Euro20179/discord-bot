@@ -52,7 +52,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.4.0"
+const VERSION = "1.4.1"
 
 let SPAMS = []
 
@@ -729,6 +729,12 @@ profile:
             user = u.first()?.id
         }
         if(!user) return {content: `${this.content} not found`}
+        if(opts["f"]){
+            return {files: [{
+                attachment: `./storage/${user}.json`,
+                name: `${user}.json`
+            }]}
+        }
         let data = ""
         for(let i in users[user]){
             data += `${i}: ${users[user][i]}\n`
@@ -754,41 +760,7 @@ leaderboard:
             }
             embeds[embed].addField(`${i + 1}: ${msg.guild.members.cache.find((val, key) => key == moneys[i][0])?.user?.username || "unknown"}`, String(moneys[i][1]), true)
         }
-        let row = new MessageActionRow()
-        let rows = []
-        let rowN = 0
-        let i
-        for(i = 0; i < embeds.length; i++){
-            if(i % 4 == 0 && i != 0){
-                rowN++
-                rows.push(row)
-                row = new MessageActionRow()
-            }
-            row.addComponents(createButton(`${i}`, `${i + 1}`, `PRIMARY`))
-        }
-        if(i > 0 && row.components.length > 0) rows.push(row)
-        let page = 0
-        msg.channel.send({embeds: [embeds[0]], components: rows}).then(
-            res => {
-                const collector = msg.channel.createMessageComponentCollector({filter: i => i.user.id == msg.author.id, time: 300 * 1000})
-                collector.on("collect", async i => {
-                    //@ts-ignore
-                    if(page == Number(i.customId)) return
-                        //@ts-ignore
-                    console.log(i.customId)
-                    //@ts-ignore
-                    page = Number(i.customId)
-                    try{
-                        //@ts-ignore
-                        await i.update({embeds: [embeds[Number(i.customId)]], components: rows})
-                    }
-                    catch(err){
-                        console.log(err)
-                    }
-                })
-            }
-        ).catch(res => console.log(res))
-        return false
+        return {embeds: embeds}
     }).setCategory("economy").setMeta({version: "1.3.0"})
 ,
 tax:

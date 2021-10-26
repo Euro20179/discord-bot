@@ -1,7 +1,19 @@
+# 1.4.1
+
+## Additions
+* -f to profile, sends your json file
+
+## Changes
+* leaderboard now just sends seperate embeds
+
+---
+
 # 1.4.0.1
 
 ## Fixes
 * capital opts
+
+---
 
 # 1.4.0
 
