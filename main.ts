@@ -1070,6 +1070,7 @@ client.on("messageCreate", async (msg) => {
     if(msg.content.slice(0, PREFIX.length) == PREFIX){
         for(let sLine of msg.content.split("\n;")){
             msg.content = sLine.trim()
+            console.log(msg.content)
             await doCmd(msg)
         }
     }
@@ -1077,7 +1078,7 @@ client.on("messageCreate", async (msg) => {
 })
 
 client.on("messageUpdate", async (oldMsg, msg) => {
-    if(msg.content.slice(0, PREFIX.length) == "["){
+    if(msg.content.slice(0, PREFIX.length) == PREFIX){
         await doCmd(msg)
     }
 })
