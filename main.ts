@@ -3,6 +3,11 @@ import { Client, Message, PartialMessage, MessageEmbed, GuildMember } from "disc
 import {Collection} from "@discordjs/collection"
 
 import {UserInfo} from "./src/userinfo"
+
+const math = require("mathjs")
+
+const mathParser = math.parser()
+
 //
 //@ts-ignore
 const fs = require("fs")
@@ -47,13 +52,11 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "["
 
-const VERSION = "1.3.11.2"
+const VERSION = "1.4.0"
 
 let SPAMS = []
 
 let LAST_DELETED_MESSAGE = {}
-
-let userVars = {global: {}}
 
 let SPAM_STOP = false
 
@@ -174,7 +177,7 @@ button:
                             }
                         })
                     }
-                )
+                ).catch(res => console.log(res))
             }
         ).catch(res => false)
         return false
@@ -317,7 +320,7 @@ progressbar:
 spam:
     new Command(async function(msg: Message, opts){
         SPAM_STOP = false
-        if(opts["d"]) await msg.delete()
+        if(opts["d"]) await msg.delete().then().catch(res => console.log(res))
         let _delay = this.getAttr('delay') || 1
 	let delay
         if(typeof _delay != "number" && _delay.indexOf(",") != -1){
@@ -409,42 +412,34 @@ var:
     new Command(function(msg, opts){
         let varName = this.content.split(" ")[0]
         let varText = this.content.split(" ").slice(1).join(" ")
-        let scope = opts["g"] ? "global" : msg.author.id 
-        try{
-            userVars[scope][varName] = varText
-        }
-        catch(err){
-            userVars[scope] = {}
-            userVars[scope][varName] = varText
-        }
+        users[msg.author.id].setVar(varName, varText)
         if(!opts["s"]){
             return {
                 content: `${varName} set for ${userMention(msg.author.id)}\n${varName} = ${varText}`
             }
         } else return false
-    }, "var [-g] varname var text\n-g: the variable is in the global scope (anyone can use it)\n-s: silent", "gs").setCategory("meta").setMeta({version: "1.0.0"})
+    }, "var varname var text\n-s: silent", "s").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 unset:
     new Command(function(msg, opts){
-        let scope = opts["g"] ? "global" : msg.author.id
         try{
-            delete userVars[scope][this.content]
+            delete users[msg.author.id].vars[this.content]
         }
         catch(err){
-            return {content: `${this.content} does not exist in ${scope} scope`}
+            return {content: `${this.content} does not exist in ${msg.author.id} scope`}
         }
         return {
-            content: `unset ${this.content} in ${scope} scope`
+            content: `unset ${this.content} in ${msg.author.id} scope`
         }
-    }, "unset [-g] varname\n-g: unset var in global scope", "g").setCategory("meta").setMeta({version: "1.0.0"})
+    }, "unset varname").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 vars:
     new Command(function(msg, opts){
         let scope = this.content || msg.author.id
         let fmt = ""
-        if(!userVars[scope]) return {content: `no vars in ${scope} scope`}
-        for(let v in userVars[scope]){
-            fmt += `${v}: ${userVars[scope][v]}\n`
+        if(!users[scope]?.vars) return {content: `no vars in ${scope} scope`}
+        for(let v in users[scope].vars){
+            fmt += `${v}: ${users[scope].vars[v]}\n`
         }
         if(fmt) return {content: fmt.trim()}
         else return {content: `no vars in ${scope} scope`}
@@ -851,7 +846,6 @@ donate:
             users[msg.author.id].money -= donation
             users[msg.author.id].lastDonated = Date.now()
             users[user[1].id].save(`./storage/${user[1].id}.json`)
-            users[msg.author.id].save(`./storage/${msg.author.id}.json`)
             return {content: `donated ${donation} to ${user[1].user.username}`}
         }
         if(!user) return {content: `Invalid user: ${searchUser}`}
@@ -885,9 +879,26 @@ SETMONEY:
             users[user[0]].money = Number(amount)
             return {content: `${userMention(user[1].id)} is at ${amount}`}
         }
-    }).addToWhitelist(["334538784043696130"])
+    }).addToWhitelist(["334538784043696130"]).setMeta({version: "unknown"}).setCategory("admin")
+,
+calc:
+    new Command(function(msg, opts){
+        if(opts["s"]){
+            try{
+                return {content: String(mathParser.simplify(this.content.trim()))}
+            } catch(err){
+                return {content: "could not simplify expression"}
+            }
+        }
+        try{
+            return {content: String(mathParser.evaluate(this.content))}
+        } catch(err){
+            return {content: "could not evaluate expression"}
+        }
+    }, "calc [-s] expression\n-s: simplify expression (cannot be equation)", "s").setCategory("util").setMeta({version: "1.4.0", math: "M A  TH"})
 }
 
+commands["calc"].registerAlias(["c", "eval", "evaluate"], commands)
 commands["leaderboard"].registerAlias(["lb", "top"], commands)
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)
 commands["8ball"].registerAlias(["8", "8b"], commands)
@@ -990,13 +1001,7 @@ function* parseVarsCommand(text){
 function replaceVars(msg){
     let text = msg.content
     for(let v of parseVarsCommand(msg.content)){
-        let var_;
-        try{
-            var_ = userVars[msg.author.id][v]
-        }
-        catch(err){
-            var_ = userVars["global"][v]
-        }
+        let var_ = users[msg.author.id].vars[v]
         if(var_ != null && var_ != undefined) text = text.replaceAll(`$${v}`, var_)
     }
     return text
@@ -1063,13 +1068,16 @@ client.on("messageCreate", async (msg) => {
     }
     users[msg.author.id]?.talk()
     if(msg.content.slice(0, PREFIX.length) == PREFIX){
-        await doCmd(msg)
+        for(let sLine of msg.content.split("\n;")){
+            msg.content = sLine.trim()
+            await doCmd(msg)
+        }
     }
     users[msg.author.id]?.save(`./storage/${msg.author.id}.json`)
 })
 
 client.on("messageUpdate", async (oldMsg, msg) => {
-    if(msg.content.slice(0, PREFIX.length) == PREFIX){
+    if(msg.content.slice(0, PREFIX.length) == "["){
         await doCmd(msg)
     }
 })

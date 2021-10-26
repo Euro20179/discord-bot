@@ -1,3 +1,23 @@
+# 1.4.0
+
+## Additions
+* do multiple commands like this:
+```bluc
+[cmd1
+;
+[cmd2
+```
+
+* [calc
+
+## Changes
+* var is persistent (doesn't reset when bot restarts)
+
+## Removed
+* global scope vars
+
+---
+
 # 1.3.11.1
 
 ## Fixes

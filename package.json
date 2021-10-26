@@ -10,8 +10,10 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^0.1.0-canary.0",
+    "@types/mathjs": "^9.4.2",
     "@types/node": "^16.11.0",
     "discord-api-types": "^0.23.1",
-    "discord.js": "^13.2.0"
+    "discord.js": "^13.2.0",
+    "mathjs": "^9.5.1"
   }
 }
