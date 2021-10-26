@@ -1,3 +1,8 @@
+# 1.4.0.1
+
+## Fixes
+* capital opts
+
 # 1.4.0
 
 ## Additions
