@@ -6,6 +6,8 @@ import {UserInfo} from "./src/userinfo"
 
 const math = require("mathjs")
 
+const mathParser = math.parser()
+
 //
 //@ts-ignore
 const fs = require("fs")
@@ -885,17 +887,13 @@ calc:
     new Command(function(msg, opts){
         if(opts["s"]){
             try{
-                return {content: String(math.simplify(this.content.trim()))}
+                return {content: String(mathParser.simplify(this.content.trim()))}
             } catch(err){
                 return {content: "could not simplify expression"}
             }
         }
-        // else if(opts["v"]){
-        //     try{
-        //     }
-        // }
         try{
-            return {content: String(math.evaluate(this.content))}
+            return {content: String(mathParser.evaluate(this.content))}
         } catch(err){
             return {content: "could not evaluate expression"}
         }
