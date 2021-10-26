@@ -765,7 +765,6 @@ leaderboard:
 ,
 tax:
     new Command(function(msg, opts){
-        console.log(users[msg.author.id].timeSinceTax())
         if(users[msg.author.id].timeSinceTax() < 1){
             return {content: `You have already taxed someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceTax()) * 60}minutes`}
         }
@@ -1042,7 +1041,6 @@ client.on("messageCreate", async (msg) => {
     if(msg.content.slice(0, PREFIX.length) == PREFIX){
         for(let sLine of msg.content.split("\n;")){
             msg.content = sLine.trim()
-            console.log(msg.content)
             await doCmd(msg)
         }
     }
