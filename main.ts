@@ -413,7 +413,6 @@ var:
         let varName = this.content.split(" ")[0]
         let varText = this.content.split(" ").slice(1).join(" ")
         users[msg.author.id].setVar(varName, varText)
-        users[msg.author.id].save(`./storage/${msg.author.id}.json`)
         if(!opts["s"]){
             return {
                 content: `${varName} set for ${userMention(msg.author.id)}\n${varName} = ${varText}`
@@ -847,7 +846,6 @@ donate:
             users[msg.author.id].money -= donation
             users[msg.author.id].lastDonated = Date.now()
             users[user[1].id].save(`./storage/${user[1].id}.json`)
-            users[msg.author.id].save(`./storage/${msg.author.id}.json`)
             return {content: `donated ${donation} to ${user[1].user.username}`}
         }
         if(!user) return {content: `Invalid user: ${searchUser}`}
