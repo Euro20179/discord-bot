@@ -10,6 +10,12 @@
 
 * [calc
 
+## Changes
+* var is persistent (doesn't reset when bot restarts)
+
+## Removed
+* global scope vars
+
 ---
 
 # 1.3.11.1

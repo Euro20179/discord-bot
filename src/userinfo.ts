@@ -9,6 +9,7 @@ export class UserInfo{
     lastTaxed: number
     lastDonated: number
     taxRate: number
+    vars: {}
     get json(){
         return {
             money: this.money, 
@@ -16,8 +17,12 @@ export class UserInfo{
             lastTalked: this.lastTalked,
             lastTaxed: this.lastTaxed,
             lastDonated: this.lastDonated,
-            taxRate: this.taxRate
+            taxRate: this.taxRate,
+            vars: this.vars
         }
+    }
+    setVar(varName, varValue){
+        this.vars[varName] = varValue
     }
     setMoney(newMoney){
         this.money = newMoney
@@ -29,13 +34,15 @@ export class UserInfo{
         this.lastTaxed = 0
         this.lastDonated = 0
         this.taxRate = .01
+        this.vars = {}
     }
-    static fromJson({id, money, lastTalked, lastTaxed, taxRate, lastDonated}) {
+    static fromJson({id, money, lastTalked, lastTaxed, taxRate, lastDonated, vars}) {
         let u = new UserInfo({id: id, money: money}) 
         u.lastTalked = lastTalked || 0
         u.lastTaxed = lastTaxed || 0
         u.lastDonated = lastDonated || 0
         u.taxRate = taxRate || 0.01
+        u.vars = vars || {}
         return u
     }
     save(path){

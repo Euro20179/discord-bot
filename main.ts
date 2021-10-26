@@ -56,8 +56,6 @@ let SPAMS = []
 
 let LAST_DELETED_MESSAGE = {}
 
-let userVars = {global: {}}
-
 let SPAM_STOP = false
 
 Command.setPrefix(PREFIX)
@@ -412,42 +410,35 @@ var:
     new Command(function(msg, opts){
         let varName = this.content.split(" ")[0]
         let varText = this.content.split(" ").slice(1).join(" ")
-        let scope = opts["g"] ? "global" : msg.author.id 
-        try{
-            userVars[scope][varName] = varText
-        }
-        catch(err){
-            userVars[scope] = {}
-            userVars[scope][varName] = varText
-        }
+        users[msg.author.id].setVar(varName, varText)
+        users[msg.author.id].save(`./storage/${msg.author.id}.json`)
         if(!opts["s"]){
             return {
                 content: `${varName} set for ${userMention(msg.author.id)}\n${varName} = ${varText}`
             }
         } else return false
-    }, "var [-g] varname var text\n-g: the variable is in the global scope (anyone can use it)\n-s: silent", "gs").setCategory("meta").setMeta({version: "1.0.0"})
+    }, "var varname var text\n-s: silent", "s").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 unset:
     new Command(function(msg, opts){
-        let scope = opts["g"] ? "global" : msg.author.id
         try{
-            delete userVars[scope][this.content]
+            delete users[msg.author.id].vars[this.content]
         }
         catch(err){
-            return {content: `${this.content} does not exist in ${scope} scope`}
+            return {content: `${this.content} does not exist in ${msg.author.id} scope`}
         }
         return {
-            content: `unset ${this.content} in ${scope} scope`
+            content: `unset ${this.content} in ${msg.author.id} scope`
         }
-    }, "unset [-g] varname\n-g: unset var in global scope", "g").setCategory("meta").setMeta({version: "1.0.0"})
+    }, "unset varname").setCategory("meta").setMeta({version: "1.0.0"})
 ,
 vars:
     new Command(function(msg, opts){
         let scope = this.content || msg.author.id
         let fmt = ""
-        if(!userVars[scope]) return {content: `no vars in ${scope} scope`}
-        for(let v in userVars[scope]){
-            fmt += `${v}: ${userVars[scope][v]}\n`
+        if(!users[scope]?.vars) return {content: `no vars in ${scope} scope`}
+        for(let v in users[scope].vars){
+            fmt += `${v}: ${users[scope].vars[v]}\n`
         }
         if(fmt) return {content: fmt.trim()}
         else return {content: `no vars in ${scope} scope`}
@@ -893,10 +884,22 @@ SETMONEY:
 calc:
     new Command(function(msg, opts){
         if(opts["s"]){
-            return {content: String(math.simplify(this.content.trim()))}
+            try{
+                return {content: String(math.simplify(this.content.trim()))}
+            } catch(err){
+                return {content: "could not simplify expression"}
+            }
         }
-        return {content: String(math.evaluate(this.content))}
-    }).setCategory("util").setMeta({version: "1.4.0", math: "M A  TH"})
+        // else if(opts["v"]){
+        //     try{
+        //     }
+        // }
+        try{
+            return {content: String(math.evaluate(this.content))}
+        } catch(err){
+            return {content: "could not evaluate expression"}
+        }
+    }, "calc [-s] expression\n-s: simplify expression (cannot be equation)", "s").setCategory("util").setMeta({version: "1.4.0", math: "M A  TH"})
 }
 
 commands["calc"].registerAlias(["c", "eval", "evaluate"], commands)
@@ -1002,13 +1005,7 @@ function* parseVarsCommand(text){
 function replaceVars(msg){
     let text = msg.content
     for(let v of parseVarsCommand(msg.content)){
-        let var_;
-        try{
-            var_ = userVars[msg.author.id][v]
-        }
-        catch(err){
-            var_ = userVars["global"][v]
-        }
+        let var_ = users[msg.author.id].vars[v]
         if(var_ != null && var_ != undefined) text = text.replaceAll(`$${v}`, var_)
     }
     return text
