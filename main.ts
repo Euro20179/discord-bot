@@ -892,6 +892,9 @@ SETMONEY:
 ,
 calc:
     new Command(function(msg, opts){
+        if(opts["s"]){
+            return {content: String(math.simplify(this.content.trim()))}
+        }
         return {content: String(math.evaluate(this.content))}
     }).setCategory("util").setMeta({version: "1.4.0", math: "M A  TH"})
 }
