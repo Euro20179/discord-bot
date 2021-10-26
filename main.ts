@@ -1081,7 +1081,7 @@ client.on("messageCreate", async (msg) => {
 })
 
 client.on("messageUpdate", async (oldMsg, msg) => {
-    if(msg.content.slice(0, PREFIX.length) == PREFIX){
+    if(msg.content.slice(0, PREFIX.length) == "["){
         await doCmd(msg)
     }
 })

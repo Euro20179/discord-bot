@@ -22,6 +22,7 @@ function parseOpts(text, optString): [Opts, string]{
         //this will be true when the first char is not -
         let c = text[textIndex]
         if(c == " " || (textIndex == 0 && c != "-")) break;
+        if(!c.match(/[a-z]/)) break;
         optsString += c
         opts[c] = true
     }
