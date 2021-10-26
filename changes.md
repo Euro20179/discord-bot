@@ -2,10 +2,13 @@
 
 ## Additions
 * do multiple commands like this:
-```
+```bluc
 [cmd1
 ;
 [cmd2
+```
+
+* [calc
 
 ---
 

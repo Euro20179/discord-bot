@@ -3,6 +3,9 @@ import { Client, Message, PartialMessage, MessageEmbed, GuildMember } from "disc
 import {Collection} from "@discordjs/collection"
 
 import {UserInfo} from "./src/userinfo"
+
+const math = require("mathjs")
+
 //
 //@ts-ignore
 const fs = require("fs")
@@ -885,9 +888,15 @@ SETMONEY:
             users[user[0]].money = Number(amount)
             return {content: `${userMention(user[1].id)} is at ${amount}`}
         }
-    }).addToWhitelist(["334538784043696130"])
+    }).addToWhitelist(["334538784043696130"]).setMeta({version: "unknown"}).setCategory("admin")
+,
+calc:
+    new Command(function(msg, opts){
+        return {content: String(math.evaluate(this.content))}
+    }).setCategory("util").setMeta({version: "1.4.0", math: "M A  TH"})
 }
 
+commands["calc"].registerAlias(["c", "eval", "evaluate"], commands)
 commands["leaderboard"].registerAlias(["lb", "top"], commands)
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)
 commands["8ball"].registerAlias(["8", "8b"], commands)
