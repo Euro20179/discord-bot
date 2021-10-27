@@ -1,8 +1,10 @@
-import { Client, Message, PartialMessage, MessageEmbed, GuildMember } from "discord.js"
+import { Client, Message, PartialMessage, MessageEmbed, GuildMember, MessageCollector } from "discord.js"
 
 import {Collection} from "@discordjs/collection"
 
 import {UserInfo} from "./src/userinfo"
+
+import {Item, items, saveItems} from "./src/items"
 
 const math = require("mathjs")
 
@@ -867,6 +869,321 @@ calc:
             return {content: "could not evaluate expression"}
         }
     }, "calc [-s] expression\n-s: simplify expression (cannot be equation)", "s").setCategory("util").setMeta({version: "1.4.0", math: "M A  TH"})
+,
+allitems:
+    new Command(function(msg, opts){
+        if(opts["f"]){
+            return {
+                files: [
+                    {
+                        attachment: './items.json',
+                        name: "items.json"
+                    }
+                ]
+            }
+        }
+        if(opts["t"]){
+            let text = ""
+            for(let item in items){
+                text += `${item}\n`
+            }
+            return text
+        }
+        let embeds = []
+        let count = 0
+        for(let i in items){
+            count++
+        }
+        let i = 1
+        for(let itemName in items){
+            let item = items[itemName]
+            let embed = new MessageEmbed({title: itemName})
+            embed.addField("cost", String(item["cost"]))
+            embed.setDescription(`page ${i}/${count}`)
+            if(item["recipes"]){
+                let i = 0
+                for(let recipe of item["recipes"]){
+                    i++
+                    if(!recipe) continue
+                    embed.addField(`recipe ${i}`, recipe.join(" + "))
+                }
+            }
+            if(item["createdBy"]){
+                embed.addField("created by", userFinder(msg.guild, item["createdBy"]).first().user.username || "unknown")
+            }
+            if(item["img"]){
+                embed.setThumbnail(item["img"])
+            }
+            embeds.push(embed)
+            i++
+        }
+        let pos = 1
+        let row = new MessageActionRow().addComponents(createButton(`${msg.author.id}:allitems-back`, "<<", "PRIMARY"), createButton(`${msg.author.id}:allitems-next`, ">>", "PRIMARY"))
+        msg.channel.send({embeds: [embeds[pos - 1]], components: [row]}).then(res => {
+            const collector = new MessageCollector(msg.channel, {filter: m => !m.author.bot ? true : false, time: 60000})
+            const buttonCollector = msg.channel.createMessageComponentCollector({time: 60000})
+            buttonCollector.on("collect", async(i)=> {
+                switch(i.customId){
+                    case `${msg.author.id}:allitems-back`:
+                        pos--
+                        break;
+                    default:
+                        pos++
+                        break;
+                }
+                if(pos > embeds.length) pos = 1
+                if(pos <= 0) pos = embeds.length
+                i.update({embeds: [embeds[pos - 1]], components: [row]})
+                return
+            })
+            collector.on("collect", async(message) => {
+                //@ts-ignore
+                if(!message.content) return
+                let sign = ""
+                if(message.content.indexOf("+") > -1) sign = "+"
+                else if(message.content.indexOf("-") > -1) sign = "-"
+                let n = Number(message.content.replace(sign, ""))
+                if(isNaN(n)){ return }
+                switch(sign){
+                    case "+":
+                        pos += n
+                        if(pos > embeds.length || pos < 0) return
+                        break
+                    case "-":
+                        pos -= n
+                        if(pos > embeds.length || pos < 0) return
+                        break
+                    default:
+                        pos = n
+                        if(pos > embeds.length || pos < 0) return
+                        break
+                }
+                await msg.channel.send({embeds: [embeds[pos - 1]], components: [row]})
+            })
+            
+        })
+        return false
+    }, "items [-fl]\n-f: give file\n-t: text only", "ft").setCategory("economy").setMeta({version: "1.5.0"})
+,
+item:
+    new Command(function(msg, opts){
+        let item = items[this.content.trim()]
+        if(!item){
+            item = users[msg.author.id].items[this.content.trim()]
+            if(!item)return {content: `could not find item: ${this.content}`}
+        }
+        let embed = new MessageEmbed({title: `${this.content}`})
+        embed.addField("cost", String(item["cost"]))
+        if(item["recipes"]){
+            let i = 0
+            for(let recipe of item["recipes"]){
+                i++
+                if(!recipe) continue
+                embed.addField(`recipe ${i}`, recipe.join(" + "))
+            }
+        }
+        if(item["createdBy"]){
+            embed.addField("created by", userFinder(msg.guild, item["createdBy"]).first().user.username || "unknown")
+        }
+        if(item["img"]){
+            embed.setThumbnail(item["img"])
+        }
+        return {embeds: [embed]}
+    }).setCategory("economy").setMeta({version: "1.5.0"})
+,
+buy:
+    new Command(function(msg, opts){
+        let requestItem = this.content.split(" ").slice(0)[0].trim()
+        let materials = this.content.split(" ").slice(1).join(" ").split(",").map((val) => val.trim())
+        if(!items[requestItem]){
+            return {content: `${this.content} is not an item`}
+        }
+        let item: Item = items[requestItem]
+        let info = users[msg.author.id]
+        if(info.money < item["cost"]){
+            return {content: `You are $${item["cost"] - info.money} short`}
+        }
+        let sortedMaterials = JSON.stringify(materials.sort())
+        let matchedRecipe = false
+        if(item["recipes"]){
+            for(let recipe of item["recipes"]){
+                if(!recipe && !materials[0]){
+                    matchedRecipe = true
+                    break
+                }
+                else if(!recipe) continue
+                let sortedRecipe = recipe.sort()
+                if(JSON.stringify(sortedRecipe) === sortedMaterials){
+                    for(let item of sortedRecipe){
+                        if(!users[msg.author.id].items[item]){ return {content: `You do not own ${item}`}}
+                        users[msg.author.id].useItem(item)
+                    }
+                    matchedRecipe = true
+                }
+            }
+        } else matchedRecipe = true
+        if(!matchedRecipe){return {content: `You have not provided a valid recipe, see [item ${requestItem} to see a list of recipes`}}
+        users[msg.author.id].buy(requestItem)
+        return {content: items[requestItem]["onPurchaceSay"] || `bought ${requestItem}`}
+    }, "buy item material1, material2...").setCategory("economy").setMeta({version: "1.5.0"})
+,
+items: 
+    new Command(async function(msg, opts){
+        let user: GuildMember = msg.author
+        if(this.content) user = userFinder(msg.guild, this.content.trim()).first()
+        if(!user){return {content: `user ${this.content} not found`}}
+        if(!users[user.id]){
+            return {content: `${user} does not have a profile`}
+        }
+        if(opts["l"]){
+            let text = ""
+            for(let item in users[user.id].items){
+                text += `${item}: ${users[user.id].itemCounts[item]}\n`
+            }
+            return {content: text || `${user.user.username} has no items`}
+        }
+        let embeds = []
+        let i = 0
+        let total = Object.keys(users[user.id].items).length
+        for(let item in users[user.id].items){
+            let e = new MessageEmbed({title: item})
+            e.setFooter(`Page: ${i + 1}/${total}`)
+            e.addField("purchace price", String(users[user.id].items[item].cost))
+            e.addField("count", String(users[user.id].itemCounts[item]))
+            if(users[user.id].items[item].img) e.setThumbnail(users[user.id].items[item].img)
+            embeds.push(e)
+            i++
+        }
+        if(embeds.length == 0){
+            return {content: `${user.user?.username} has no items`}
+        }
+        let pos = 1
+        let row = new MessageActionRow().addComponents(createButton(`${msg.author.id}:items-back`, "<<", "PRIMARY"), createButton(`${msg.author.id}:items-next`, ">>", "PRIMARY"))
+        msg.channel.send({embeds: [embeds[pos - 1]], components: [row]}).then(res => {
+            const collector = new MessageCollector(msg.channel, {filter: m => !m.author.bot ? true : false, time: 60000})
+            const buttonCollector = msg.channel.createMessageComponentCollector({time: 60000})
+            buttonCollector.on("collect", async(i)=> {
+                switch(i.customId){
+                    case `${msg.author.id}:items-back`:
+                        pos--
+                        break;
+                    default:
+                        pos++
+                        break;
+                }
+                if(pos > embeds.length) pos = 1
+                if(pos <= 0) pos = embeds.length
+                i.update({embeds: [embeds[pos - 1]], components: [row]})
+                return
+            })
+            collector.on("collect", async(message) => {
+                //@ts-ignore
+                if(!message.content) return
+                let sign = ""
+                if(message.content.indexOf("+") > -1) sign = "+"
+                else if(message.content.indexOf("-") > -1) sign = "-"
+                let n = Number(message.content.replace(sign, ""))
+                if(isNaN(n)){ return }
+                switch(sign){
+                    case "+":
+                        pos += n
+                        if(pos > embeds.length || pos < 0) return
+                        break
+                    case "-":
+                        pos -= n
+                        if(pos > embeds.length || pos < 0) return
+                        break
+                    default:
+                        pos = n
+                        if(pos > embeds.length || pos < 0) return
+                        break
+                }
+                await msg.channel.send({embeds: [embeds[pos - 1]], components: [row]})
+            })
+        })
+        return false
+    }, "items [-l] [user]\n-l: list items instead of embeds", "l").setCategory("economy").setMeta({version: '1.5.0'})
+,
+'additem':
+    new Command(function(msg, opts){
+        let cost = Number(this.getAttr("cost")) || 100
+        if(isNaN(cost)) return {content: `${cost} is not a number`}
+        if(cost < 0) return {content: "cost cannot be less than 0"}
+        let count = Number(this.getAttr("count")) || 1
+        if(isNaN(count))return {content: `${count} is not a number`}
+        let recipe = this.getAttr("recipes") || ""
+        let img = this.getAttr("img") || ""
+        let recipes = null
+        if(recipe){
+            recipes = []
+            for(let rec of recipe.split("|")){
+                recipes.push(rec.split(","))
+            }
+        }
+        let itemName = this.content.split(" ")[0]
+        let saying = this.content.split(" ").slice(1).join(" ")
+        if(itemName.match(/,/)){
+            return {content: "item name cannot have , in the name"}
+        }
+        if(items[itemName]){
+            return {content: `${itemName} already exists`}
+        }
+        items[itemName] = {
+            onPurchaceSay: saying,
+            createdBy: String(msg.author.id),
+            cost: cost,
+            recipes: recipes,
+            count: count,
+            img: img
+        }
+        saveItems(items)
+        return {content: `created item ${itemName}:\n${JSON.stringify(items[itemName])}`}
+    }, "additem [cost=\"amount\"] [count=\"count to get when bought\"] [recipes=\"recipe1|recipe2...\"] item-name thing that is said when item is bought\nrecipies are items seperated by ,. These items technically dont' have to exist, but if they don't you wont be able to buy the item").setCategory("economy").setMeta({version: "1.5.0"})
+,
+rmitem:
+    new Command(function(msg, opts){
+        let iName = this.content.trim()
+        if(!items[iName]){
+            return {content: "item doesn't exist"}
+        }
+        if(!items[iName]["createdBy"]) return {content: "item is a standard item"}
+        let createdBy = userFinder(msg.guild, items[iName]["createdBy"]).first()
+        if(createdBy.id != msg.author.id) return {content: "you did not create this item"}
+        delete items[iName]
+        saveItems(items)
+        return {content: `${iName} deleted`}
+    }).setCategory("economy").setMeta({version: "1.5.0"})
+,
+edititem:
+    new Command(function(msg, opts){
+        let cost = this.getAttr("cost")
+        let recipe = this.getAttr("recipes")
+        let onSay = this.getAttr("onbuy")
+        let count = this.getAttr("count")
+        let img = this.getAttr("img")
+        let iName = this.content.trim()
+        if(!items[iName]){
+            return {content: "item doesn't exist"}
+        }
+        if(!items[iName]["createdBy"]) return {content: "item is a standard item"}
+        let createdBy = userFinder(msg.guild, items[iName]["createdBy"]).first()
+        if(createdBy.id != msg.author.id) return {content: "you did not create this item"}
+        let item = items[iName]
+        if(cost && !isNaN(Number(cost))) item["cost"] = Number(cost)
+        if(count && !isNaN(Number(count))) item["count"] = Number(count)
+        if(onSay) item["onPurcacheSay"] = onSay
+        if(img) item["img"] = img
+        if(recipe){
+            let recipes = []
+            for(let rec of recipe.split("|")){
+                recipes.push(rec.split(","))
+            }
+            item["recipes"] = recipes
+        }
+        items[iName] = item
+        saveItems(items)
+        return {content: JSON.stringify(item)}
+    })
 }
 
 commands["calc"].registerAlias(["c", "eval", "evaluate"], commands)

@@ -6,3 +6,5 @@ storage/*
 token
 guild
 *.js
+items-default.json
+items.json

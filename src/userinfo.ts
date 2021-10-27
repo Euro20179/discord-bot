@@ -1,3 +1,5 @@
+import { Item } from "./items";
+import {items} from "./items";
 import { randint } from "./util";
 
 const fs = require('fs');
@@ -10,6 +12,8 @@ export class UserInfo{
     lastDonated: number
     taxRate: number
     vars: {}
+    items: {}
+    itemCounts: {}
     get json(){
         return {
             money: this.money, 
@@ -18,7 +22,9 @@ export class UserInfo{
             lastTaxed: this.lastTaxed,
             lastDonated: this.lastDonated,
             taxRate: this.taxRate,
-            vars: this.vars
+            vars: this.vars,
+            items: this.items,
+            itemCounts: this.itemCounts
         }
     }
     setVar(varName, varValue){
@@ -35,14 +41,18 @@ export class UserInfo{
         this.lastDonated = 0
         this.taxRate = .01
         this.vars = {}
+        this.items = {}
+        this.itemCounts = {}
     }
-    static fromJson({id, money, lastTalked, lastTaxed, taxRate, lastDonated, vars}) {
+    static fromJson({id, money, lastTalked, lastTaxed, taxRate, lastDonated, vars, items, itemCounts}) {
         let u = new UserInfo({id: id, money: money}) 
         u.lastTalked = lastTalked || 0
         u.lastTaxed = lastTaxed || 0
         u.lastDonated = lastDonated || 0
         u.taxRate = taxRate || 0.01
         u.vars = vars || {}
+        u.items = items || {}
+        u.itemCounts = itemCounts || {}
         return u
     }
     save(path){
@@ -54,6 +64,18 @@ export class UserInfo{
             if(!this.money) this.money = 100
             else this.money *= 1.01
         }
+    }
+    buy(item: string){
+        this.items[item] = items[item]
+        this.money -= this.items[item].cost
+        if(!this.itemCounts[item]) this.itemCounts[item] = items[item].count ?? 1
+        else this.itemCounts[item] += items[item].count ?? 1
+    }
+    useItem(item: string){
+        if(this.itemCounts[item] == 1){
+            delete this.items[item]
+            delete this.itemCounts[item]
+        } else this.itemCounts[item]--
     }
     timeSinceTax(){
         return (Date.now() - this.lastTaxed) / (60 * 60 * 1000)
