@@ -1,3 +1,16 @@
+# 1.5.0
+
+## Additions
+* items
+* [items
+* [additem
+* [rmitem
+* [buy
+* [item
+* [allitems 
+
+---
+
 # 1.4.1
 
 ## Additions
