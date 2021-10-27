@@ -918,16 +918,18 @@ allitems:
             i++
         }
         let pos = 1
-        let row = new MessageActionRow().addComponents(createButton(`${msg.author.id}:allitems-back`, "<<", "PRIMARY"), createButton(`${msg.author.id}:allitems-next`, ">>", "PRIMARY"))
+        let backId = `${msg.author.id}${Math.random()}:allitems-back`
+        let nextId = `${msg.author.id}${Math.random()}:allitems-next`
+        let row = new MessageActionRow().addComponents(createButton(backId, "<<", "PRIMARY"), createButton(nextId, ">>", "PRIMARY"))
         msg.channel.send({embeds: [embeds[pos - 1]], components: [row]}).then(res => {
             const collector = new MessageCollector(msg.channel, {filter: m => !m.author.bot && m.content ? true : false, time: 60000})
             const buttonCollector = msg.channel.createMessageComponentCollector({time: 60000})
             buttonCollector.on("collect", async(i)=> {
                 switch(i.customId){
-                    case `${msg.author.id}:allitems-back`:
+                    case backId:
                         pos--
                         break;
-                    case `${msg.author.id}:allitems-next`:
+                    case nextId:
                         pos++
                         break;
                     default: return
@@ -1060,18 +1062,25 @@ items:
             return {content: `${user.user?.username} has no items`}
         }
         let pos = 1
-        let row = new MessageActionRow().addComponents(createButton(`${msg.author.id}:items-back`, "<<", "PRIMARY"), createButton(`${msg.author.id}:items-next`, ">>", "PRIMARY"))
+        let backId = `${msg.author.id}${Math.random()}:items-back`
+        let nextId = `${msg.author.id}${Math.random()}:items-next`
+        let stopId = `${msg.author.id}${Math.random()}:stop`
+        let row = new MessageActionRow().addComponents(createButton(backId, "<<", "PRIMARY"), createButton(nextId, ">>", "PRIMARY"), createButton(stopId, "X", "DANGER"))
         msg.channel.send({embeds: [embeds[pos - 1]], components: [row]}).then(res => {
             const collector = new MessageCollector(msg.channel, {filter: m => !m.author.bot && m.content ? true : false, time: 60000})
             const buttonCollector = msg.channel.createMessageComponentCollector({time: 60000})
             buttonCollector.on("collect", async(i)=> {
                 switch(i.customId){
-                    case `${msg.author.id}:items-back`:
+                    case backId:
                         pos--
                         break;
-                    case `${msg.author.id}:items-next`:
+                    case nextId:
                         pos++
                         break;
+                    case stopId:
+                        buttonCollector.stop("user stop")
+                        i.update({content: "stopped"})
+                        return
                     default: return
                 }
                 if(pos > embeds.length) pos = 1
@@ -1083,6 +1092,12 @@ items:
             collector.on("collect", async(message) => {
                 //@ts-ignore
                 if(!message.content) return
+                if(message.content == "x") {
+                    collector.stop()
+                    //@ts-ignore
+                    message.update({content: "stopped"})
+                    return
+                }
                 let sign = ""
                 if(message.content.indexOf("+") > -1) sign = "+"
                 else if(message.content.indexOf("-") > -1) sign = "-"

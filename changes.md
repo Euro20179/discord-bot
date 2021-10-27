@@ -1,3 +1,11 @@
+# 1.5.2
+
+## Fixes
+* 2 [item commands by same user crashes bot
+* 2 [allitems commands by same user crashes bot
+
+---
+
 # 1.5.0
 
 ## Additions
