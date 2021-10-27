@@ -54,7 +54,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.4.1"
+const VERSION = "1.5.1"
 
 let SPAMS = []
 
