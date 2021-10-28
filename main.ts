@@ -54,7 +54,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "]"
 
-const VERSION = "1.5.2"
+const VERSION = "1.5.3"
 
 let SPAMS = []
 
@@ -724,25 +724,45 @@ money:
     }, "money user").setCategory("economy").setMeta({version: "1.3.0"})
 ,
 profile:
-    new Command(function(msg, opts){
-        let user = msg.author.id
+    new Command(function(msg: Message, opts){
+        let u = msg.author
+        let fmt = this.getAttr("fmt") || "%i:\nmoney: %m\ntax rate: %t"
         if(this.content) {
-            let u = userFinder(msg.guild, this.content)
-            user = u.first()?.id
+            if(!(u = userFinder(msg.guild, this.content)?.first()?.user)) return {content: `${this.content} not found`}
         }
-        if(!user) return {content: `${this.content} not found`}
         if(opts["f"]){
             return {files: [{
-                attachment: `./storage/${user}.json`,
-                name: `${user}.json`
+                attachment: `./storage/${u.id}.json`,
+                name: `${u.id}.json`
             }]}
         }
-        let data = ""
-        for(let i in users[user]){
-            data += `${i}: ${users[user][i]}\n`
+        if(!users[u.id])return {content: "this user has no profile"}
+        return {
+            content: formatp(fmt, [
+                ["(?<!%)%i", u.id],
+                ["(?<!%)%m", String(users[u.id].money)],
+                ["(?<!%)%lt", new Date(users[u.id].lastTalked)],
+                ["(?<!%)%lx", new Date(users[u.id].lastTaxed)],
+                ["(?<!%)%ld", new Date(users[u.id].lastDonated)],
+                ["(?<!%)%t", String(users[u.id].taxRate)],
+                ["(?<!%)%v", (() => {
+                    let text = ""
+                    for(let va in users[u.id].vars){
+                        text += `${va}: ${users[u.id].vars[va]}\n`
+                    }
+                    return text || "NO VARS"
+                })],
+            ])
         }
-        return {content: data.trim()}
-    }).setCategory("economy").setMeta({version: "1.3.0"})
+    }, `profile [fmt=\"fmt\"] [user]
+formats:
+    %i: user id
+    %m: user money
+    %lt: last time user talked
+    %lx: last time user taxed someone
+    %ld: last time user donated
+    %t: user's taxrate
+    %v: user's variables`).setCategory("economy").setMeta({version: "1.3.0"})
 ,
 leaderboard:
     new Command(function(msg: Message, opts){
@@ -1205,6 +1225,7 @@ edititem:
     })
 }
 
+commands["allitems"].registerAlias(["shop"], commands)
 commands["calc"].registerAlias(["c", "eval", "evaluate"], commands)
 commands["leaderboard"].registerAlias(["lb", "top"], commands)
 commands["8bfile"].registerAlias(["8f", "8bf"], commands)

@@ -1,3 +1,11 @@
+# 1.5.3
+
+## Additions
+* nicer [profile
+* [shop as alias to [allitems
+
+---
+
 # 1.5.2
 
 ## Fixes

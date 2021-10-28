@@ -40,7 +40,7 @@ function strftime(format, timezone, time){
 }
 
 //@ts-ignore
-function expandContent(text, msg, customExpansions, basic){
+function expandContent(text, msg: Message, customExpansions, basic){
     basic = basic ?? true
     for(let e in customExpansions){
         text = text.replaceAll(`{${e}}`, customExpansions[e])
@@ -48,8 +48,10 @@ function expandContent(text, msg, customExpansions, basic){
     if(basic){
         text = text
             .replaceAll('{mention}', userMention(msg.author.id))
-            .replaceAll('{author}', msg.author.name)
+            .replaceAll('{author}', msg.author.username)
             .replaceAll('{channel}', channelMention(msg.channel.id))
+            .replaceAll(/(?<!\\)\n/g, "\n")
+            .replaceAll(/(?<!\\)\t/g, "\t")
     }
     return text
 }
