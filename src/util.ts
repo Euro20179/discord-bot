@@ -50,8 +50,8 @@ function expandContent(text, msg: Message, customExpansions, basic){
             .replaceAll('{mention}', userMention(msg.author.id))
             .replaceAll('{author}', msg.author.username)
             .replaceAll('{channel}', channelMention(msg.channel.id))
-            .replaceAll(/(?<!\\)\n/g, "\n")
-            .replaceAll(/(?<!\\)\t/g, "\t")
+            .replaceAll(/(?<!\\)\\n/g, "\n")
+            .replaceAll(/(?<!\\)\\t/g, "\t")
     }
     return text
 }
