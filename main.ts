@@ -54,7 +54,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "["
 
-const VERSION = "1.5.5"
+const VERSION = "1.5.5.1"
 
 let SPAMS = []
 
@@ -816,7 +816,7 @@ tax:
     }, "tax user\nWhen you tax someone, the taxrate of all other users (except you) increases by 1%").setCategory("economy").setMeta({version: "1.3.0"})
 ,
 donate:
-    new Command(function(msg, opts){
+    new Command(function(msg: Message, opts){
         if(users[msg.author.id].timeSinceDonate() < 1){
             return {content: `You have already donated to someone within the past hour\nwait another ${(1 - users[msg.author.id].timeSinceDonate()) * 60}minutes`}
         }
@@ -830,7 +830,7 @@ donate:
         let u = userFinder(msg.guild, searchUser)
         let user: [string, GuildMember] ;
         for(user of u){
-            if(user[1].user.bot) return {content: "bots cannot donate"}
+            if(msg.author.bot) return {content: "bots cannot donate"}
             if(!users[user[1].id]){
                 users[user[1].id] = new UserInfo({id: user[1].id, money: 100})
             }
