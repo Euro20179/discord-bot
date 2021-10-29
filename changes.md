@@ -1,3 +1,10 @@
+# 1.5.5
+
+## Additions
+* escape {author} etc, will be unescaped in future
+
+---
+
 # 1.5.4
 
 ## Fixes
