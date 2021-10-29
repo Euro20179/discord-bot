@@ -54,7 +54,7 @@ const BOT_ADMINS = ["334538784043696130", "412365502112071681"]
 
 let PREFIX = "["
 
-const VERSION = "1.5.3"
+const VERSION = "1.5.4"
 
 let SPAMS = []
 
@@ -763,7 +763,7 @@ formats:
     %lx: last time user taxed someone
     %ld: last time user donated
     %t: user's taxrate
-    %v: user's variables`).setCategory("economy").setMeta({version: "1.3.0"})
+    %v: user's variables`, "", true).setCategory("economy").setMeta({version: "1.3.0"})
 ,
 leaderboard:
     new Command(function(msg: Message, opts){

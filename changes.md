@@ -1,3 +1,10 @@
+# 1.5.4
+
+## Fixes
+* weird bug parsing arg=value
+
+---
+
 # 1.5.3
 
 ## Additions

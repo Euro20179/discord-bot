@@ -111,35 +111,12 @@ export class Command{
         let currWord = ""
         let prevWord = currWord
         let getValue = false
-        let escape = false
         let useQuotes = false
         for(let i = 0; i < this.content.length; i++){
             let c = this.content[i]
             if(getValue){
                 if(c == '"' && rv.length == 0){
                     useQuotes = true
-                }
-                else if(c == "\\"){
-                    escape = true
-                }
-                else if(escape){
-                    switch(c){
-                        case "n":
-                            rv += '\n'
-                            break;
-                        case "t":
-                            rv += '\t'
-                            break;
-                        case "\\":
-                            rv += "\\"
-                            break;
-                        case "\"":
-                            rv += "\""
-                            break
-                        default:
-                            rv += "\\" + c
-                            break
-                    }
                 }
                 else if (c == "\"" && useQuotes){
                     this._content = this.content.replace(`${attribute}="${rv}"`, "")
@@ -195,7 +172,7 @@ export class Command{
         }
         this.optsString = optsString
         this._content = Command.getText(this.msg.content).replace(this.optsString, "")
-        if(!this.noSubstitution) this._content = expandContent(this.content, msg)
+        if(!this.noSubstitution) this._content = expandContent(this.content, msg.author)
         return this.onCall(msg, opts)
     }
 }
