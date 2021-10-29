@@ -49,9 +49,12 @@ function expandContent(text, user: User, customExpansions, basic){
     }
     if(basic){
         text = text
-            .replaceAll('{mention}', userMention(user.id))
-            .replaceAll('{author}', user.username)
-            .replaceAll('{channel}', channelMention(user.id))
+            .replaceAll(/(?<!\\)\{mention\}/g, userMention(user.id))
+            .replaceAll(/(?<!\\)\{author\}/g, user.username)
+            .replaceAll(/(?<!\\)\{channel\}/g, channelMention(user.id))
+            .replaceAll(/\\\{mention\}/g, "{mention}")
+            .replaceAll(/\\\{author\}/g, "{author}")
+            .replaceAll(/\\\{channel\}/g, "{channel}")
             .replaceAll(/(?<!\\)\\n/g, "\n")
             .replaceAll(/(?<!\\)\\t/g, "\t")
     }
