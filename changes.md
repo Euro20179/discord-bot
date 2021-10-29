@@ -4,6 +4,9 @@
 * nicer [profile
 * [shop as alias to [allitems
 
+## Changes
+* Improve var=value in commands (no longer needs quotes if there is no space)
+
 ---
 
 # 1.5.2
