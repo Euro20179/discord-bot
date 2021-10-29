@@ -87,7 +87,7 @@ echo:
         }
         return {
             reply: msgToReplyTo,
-            content: expandContent(this.content, msg)
+            content: expandContent(this.content, msg.author)
         }
     }, 
     'echo [-Df] [reply=\"messageid\"] [filename=\"name\"] [ext=\"ext\"] message\n-D: don\'t delete your message\n-f: write to file', 'Df').setCategory("fun").setMeta({version: "1.0.0"})
@@ -169,7 +169,7 @@ button:
                         collector.on("collect", async i => {
                             if(i.customId === `${msg.author.id}:button`){
                                 await i.update({
-                                    content: expandContent(onclick, msg, {
+                                    content: expandContent(onclick, msg.author, {
                                         "clicker": i.user.username,
                                         "clickerm": userMention(i.user.id),
                                         "timeclicked": new Date().toString()
@@ -698,7 +698,7 @@ snipe:
 "8ball":
     new Command(function(msg, opts){
         let resp = JSON.parse(fs.readFileSync('./storage/8ball.list').toString())
-        return {content: expandContent(resp[Math.floor(Math.random() * resp.length)], msg, {content: this.content.trim() || "?"})}
+        return {content: expandContent(resp[Math.floor(Math.random() * resp.length)], msg.author, {content: this.content.trim() || "?"})}
     }).setCategory("fun").setMeta({version: "1.2.0"})
 ,
 "8bfile": 
@@ -727,6 +727,7 @@ profile:
     new Command(function(msg: Message, opts){
         let u = msg.author
         let fmt = this.getAttr("fmt") || "%i:\nmoney: %m\ntax rate: %t"
+        console.log(fmt, this.content)
         if(this.content) {
             if(!(u = userFinder(msg.guild, this.content)?.first()?.user)) return {content: `${this.content} not found`}
         }
@@ -737,6 +738,7 @@ profile:
             }]}
         }
         if(!users[u.id])return {content: "this user has no profile"}
+        fmt = expandContent(fmt, u)
         return {
             content: formatp(fmt, [
                 ["(?<!%)%i", u.id],

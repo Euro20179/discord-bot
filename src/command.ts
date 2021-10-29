@@ -107,12 +107,63 @@ export class Command{
         return this
     }
     getAttr(attribute){
-        let m = this.content.match(new RegExp(`(?<!\\\\)${attribute}="(.*?)"`))
-        if(m){
-            this._content = this._content.replace(m[0], "")
-            return m[1]
+        let rv = ""
+        let currWord = ""
+        let prevWord = currWord
+        let getValue = false
+        let escape = false
+        let useQuotes = false
+        for(let i = 0; i < this.content.length; i++){
+            let c = this.content[i]
+            if(getValue){
+                if(c == '"' && rv.length == 0){
+                    useQuotes = true
+                }
+                else if(c == "\\"){
+                    escape = true
+                }
+                else if(escape){
+                    switch(c){
+                        case "n":
+                            rv += '\n'
+                            break;
+                        case "t":
+                            rv += '\t'
+                            break;
+                        case "\\":
+                            rv += "\\"
+                            break;
+                        case "\"":
+                            rv += "\""
+                            break
+                        default:
+                            rv += "\\" + c
+                            break
+                    }
+                }
+                else if (c == "\"" && useQuotes){
+                    this._content = this.content.replace(`${attribute}="${rv}"`, "")
+                    return rv
+                }
+                else if(c == " " && !useQuotes){
+                    this._content = this.content.replace(`${attribute}=${rv}`, "")
+                    return rv
+                }
+                else rv += c
+            }
+            if(c.match(/\W/)){
+                prevWord = currWord
+                currWord = ""
+            }
+            else currWord += c
+            if(prevWord == attribute && c == "="){
+                getValue = true
+                continue
+            }
         }
-        return null
+        if(useQuotes) this._content = this.content.replace(`${attribute}="${rv}"`, "")
+        else this._content = this.content.replace(`${attribute}=${rv}`, "")
+        return rv
     }
     HELP(){
         let str = `${this.help}\n\naliases: `
