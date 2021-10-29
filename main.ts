@@ -727,7 +727,6 @@ profile:
     new Command(function(msg: Message, opts){
         let u = msg.author
         let fmt = this.getAttr("fmt") || "%i:\nmoney: %m\ntax rate: %t"
-        console.log(fmt, this.content)
         if(this.content) {
             if(!(u = userFinder(msg.guild, this.content)?.first()?.user)) return {content: `${this.content} not found`}
         }
