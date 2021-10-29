@@ -1,3 +1,10 @@
+# 1.5.5.1
+
+## Fixes
+* bots *really* can't donate
+
+---
+
 # 1.5.5
 
 ## Additions
