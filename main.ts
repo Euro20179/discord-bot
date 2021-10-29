@@ -763,7 +763,7 @@ formats:
     %lx: last time user taxed someone
     %ld: last time user donated
     %t: user's taxrate
-    %v: user's variables`).setCategory("economy").setMeta({version: "1.3.0"})
+    %v: user's variables`, "", true).setCategory("economy").setMeta({version: "1.3.0"})
 ,
 leaderboard:
     new Command(function(msg: Message, opts){

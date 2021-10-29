@@ -1,4 +1,4 @@
-import { Guild, GuildMember } from "discord.js"
+import { Guild, GuildMember, User } from "discord.js"
 import {Collection} from "@discordjs/collection"
 const https = require("https")
 const fs = require("fs")
@@ -40,10 +40,12 @@ function strftime(format, timezone, time){
 }
 
 //@ts-ignore
-function expandContent(text, user: Message, customExpansions, basic){
+function expandContent(text, user: User, customExpansions, basic){
     basic = basic ?? true
-    for(let e in customExpansions){
-        text = text.replaceAll(`{${e}}`, customExpansions[e])
+    if(customExpansions){
+        for(let e in customExpansions){
+            text = text.replaceAll(`{${e}}`, customExpansions[e])
+        }
     }
     if(basic){
         text = text
